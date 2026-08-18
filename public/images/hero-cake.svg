@@ -1,0 +1,46 @@
+<svg viewBox="0 0 600 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Elegant three tier celebration cake illustration">
+  <defs>
+    <radialGradient id="heroBg" cx="50%" cy="42%" r="65%">
+      <stop offset="0%" stop-color="#FBF3E7"/>
+      <stop offset="100%" stop-color="#F3DDD6"/>
+    </radialGradient>
+  </defs>
+  <circle cx="300" cy="300" r="280" fill="url(#heroBg)"/>
+  <circle cx="300" cy="300" r="278" fill="none" stroke="#E7C98F" stroke-width="1"/>
+
+  <!-- plate -->
+  <ellipse cx="300" cy="460" rx="150" ry="16" fill="#EADFCB"/>
+  <ellipse cx="300" cy="455" rx="150" ry="16" fill="#F7EFE0" stroke="#D9BE8C" stroke-width="1.5"/>
+
+  <!-- tier 3 (bottom) -->
+  <rect x="195" y="380" width="210" height="75" rx="14" fill="#FDF8EF" stroke="#C6A15B" stroke-width="2"/>
+  <path d="M195 400 Q300 415 405 400" fill="none" stroke="#C6A15B" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- tier 2 -->
+  <rect x="222" y="300" width="156" height="85" rx="13" fill="#FBF3E7" stroke="#C6A15B" stroke-width="2"/>
+  <path d="M222 322 Q300 336 378 322" fill="none" stroke="#C6A15B" stroke-width="1.2" opacity="0.6"/>
+  <!-- drip -->
+  <path d="M222 300 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0 q6 22 12 0"
+        fill="none" stroke="#C6A15B" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- tier 1 (top) -->
+  <rect x="252" y="230" width="96" height="72" rx="12" fill="#FDF8EF" stroke="#C6A15B" stroke-width="2"/>
+  <path d="M252 250 Q300 262 348 250" fill="none" stroke="#C6A15B" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- floral topper -->
+  <g stroke="#B8935B" stroke-width="1.6" fill="none">
+    <circle cx="300" cy="215" r="9" fill="#F3DDD6" stroke="#C6A15B"/>
+    <circle cx="282" cy="222" r="7" fill="#FBF3E7" stroke="#C6A15B"/>
+    <circle cx="318" cy="222" r="7" fill="#FBF3E7" stroke="#C6A15B"/>
+    <circle cx="300" cy="230" r="6" fill="#F3DDD6" stroke="#C6A15B"/>
+    <path d="M330 210 q10 -18 22 -14" stroke="#8FA377"/>
+    <path d="M270 210 q-10 -18 -22 -14" stroke="#8FA377"/>
+  </g>
+
+  <!-- sparkles -->
+  <g stroke="#C6A15B" stroke-width="1.4" stroke-linecap="round">
+    <path d="M150 190 l0 16 M142 198 l16 0"/>
+    <path d="M450 250 l0 14 M443 257 l14 0"/>
+    <path d="M420 150 l0 10 M415 155 l10 0"/>
+  </g>
+</svg>

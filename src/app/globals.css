@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+:root {
+  --cream: #fbf6ee;
+  --ivory: #fffdf9;
+  --blush: #f3ddd6;
+  --blush-soft: #fbf0ec;
+  --gold: #c6a15b;
+  --gold-dark: #a9803d;
+  --gold-light: #e7c98f;
+  --ink: #40332a;
+  --text: #6b5c4e;
+  --text-muted: #8a7a6a;
+  --border: #e8dcc8;
+  --danger: #b4483c;
+}
+
+@theme inline {
+  --color-cream: var(--cream);
+  --color-ivory: var(--ivory);
+  --color-blush: var(--blush);
+  --color-blush-soft: var(--blush-soft);
+  --color-gold: var(--gold);
+  --color-gold-dark: var(--gold-dark);
+  --color-gold-light: var(--gold-light);
+  --color-ink: var(--ink);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-danger: var(--danger);
+  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-poppins);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+  }
+
+  body {
+    background: var(--cream);
+    color: var(--text);
+    font-family: var(--font-poppins), sans-serif;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-playfair), serif;
+    color: var(--ink);
+  }
+}
+
+::selection {
+  background: var(--gold-light);
+  color: var(--ink);
+}
+
+@layer components {
+  .container-app {
+    @apply w-full max-w-[1200px] mx-auto px-6;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2.5 text-[0.78rem] tracking-[0.22em] uppercase font-semibold;
+    color: var(--gold-dark);
+  }
+  .eyebrow::before,
+  .eyebrow::after {
+    content: "";
+    width: 24px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2.5 rounded-full font-semibold text-[0.95rem] px-8 py-4 transition-all duration-300 whitespace-nowrap;
+  }
+  .btn-primary {
+    @apply text-white shadow-[0_12px_30px_rgba(169,128,61,0.35)] hover:-translate-y-0.5;
+    background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  }
+  .btn-outline {
+    @apply border;
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .btn-outline:hover {
+    background: var(--ink);
+    color: white;
+  }
+  .btn-whatsapp {
+    @apply text-white;
+    background: #25d366;
+  }
+  .btn-whatsapp:hover {
+    background: #1fb959;
+  }
+  .btn-sm {
+    @apply px-5 py-2.5 text-[0.85rem];
+  }
+  .btn-block {
+    @apply w-full;
+  }
+  .btn:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
+  .card {
+    background: var(--ivory);
+    border: 1px solid var(--border);
+    @apply rounded-[18px];
+  }
+
+  .field-label {
+    @apply block text-[0.86rem] font-semibold mb-2;
+    color: var(--ink);
+  }
+  .field-input {
+    @apply w-full rounded-[10px] px-4 py-3 text-[0.95rem] outline-none transition-colors;
+    background: var(--ivory);
+    border: 1.5px solid var(--border);
+    color: var(--ink);
+  }
+  .field-input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 4px rgba(198, 161, 91, 0.15);
+  }
+  .field-error {
+    border-color: var(--danger) !important;
+  }
+  .field-has-error .field-input {
+    border-color: var(--danger);
+  }
+  .field-hint {
+    @apply text-[0.78rem] mt-1.5 block;
+    color: var(--text-muted);
+  }
+}

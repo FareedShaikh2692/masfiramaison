@@ -1,0 +1,27 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Anniversary cake illustration">
+  <defs>
+    <radialGradient id="bg-rose-hearts" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#FBF0EC"/>
+      <stop offset="100%" stop-color="#EBC9C1"/>
+    </radialGradient>
+  </defs>
+  <circle cx="200" cy="200" r="188" fill="url(#bg-rose-hearts)"/>
+  <circle cx="200" cy="200" r="186" fill="none" stroke="#E7C98F" stroke-width="1"/>
+
+  <ellipse cx="200" cy="290" rx="92" ry="11" fill="#EADFCB"/>
+  <ellipse cx="200" cy="286" rx="92" ry="11" fill="#F7EFE0" stroke="#D9BE8C" stroke-width="1.2"/>
+
+  <rect x="130" y="228" width="140" height="58" rx="11" fill="#FDF8EF" stroke="#C6A15B" stroke-width="1.8"/>
+  <path d="M130 244 Q200 254 270 244" fill="none" stroke="#C6A15B" stroke-width="1" opacity="0.55"/>
+  
+  <path d="M175 172 q6 18 12 0 q6 18 12 0 q6 18 12 0 q6 18 12 0 q6 18 12 0"
+        fill="none" stroke="#C6A15B" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
+
+  <rect x="152" y="168" width="96" height="62" rx="10" fill="#FBF3E7" stroke="#C6A15B" stroke-width="1.8"/>
+  <path d="M152 186 Q200 196 248 186" fill="none" stroke="#C6A15B" stroke-width="1" opacity="0.55"/>
+  
+  <g fill="#D98E82" stroke="#C6A15B" stroke-width="1">
+    <path d="M188 138 c-8 -10 -22 -2 -14 10 c4 6 14 12 14 12 c0 0 10 -6 14 -12 c8 -12 -6 -20 -14 -10z"/>
+    <path d="M212 128 c-6 -7 -16 -1 -10 7 c3 4 10 9 10 9 c0 0 7 -5 10 -9 c6 -8 -4 -14 -10 -7z"/>
+  </g>
+</svg>

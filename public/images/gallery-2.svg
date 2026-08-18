@@ -1,0 +1,30 @@
+<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Wedding cake gallery image">
+  <defs>
+    <radialGradient id="bg-cream-florals" cx="50%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#FFFDF8"/>
+      <stop offset="100%" stop-color="#F3E9D6"/>
+    </radialGradient>
+  </defs>
+  <circle cx="200" cy="200" r="188" fill="url(#bg-cream-florals)"/>
+  <circle cx="200" cy="200" r="186" fill="none" stroke="#E7C98F" stroke-width="1"/>
+
+  <ellipse cx="200" cy="290" rx="92" ry="11" fill="#EADFCB"/>
+  <ellipse cx="200" cy="286" rx="92" ry="11" fill="#F7EFE0" stroke="#D9BE8C" stroke-width="1.2"/>
+
+  <rect x="130" y="228" width="140" height="58" rx="11" fill="#FDF8EF" stroke="#C6A15B" stroke-width="1.8"/>
+  <path d="M130 244 Q200 254 270 244" fill="none" stroke="#C6A15B" stroke-width="1" opacity="0.55"/>
+  
+  <path d="M175 172 q6 18 12 0 q6 18 12 0 q6 18 12 0 q6 18 12 0 q6 18 12 0"
+        fill="none" stroke="#C6A15B" stroke-width="1.8" stroke-linecap="round" opacity="0.85"/>
+
+  <rect x="152" y="168" width="96" height="62" rx="10" fill="#FBF3E7" stroke="#C6A15B" stroke-width="1.8"/>
+  <path d="M152 186 Q200 196 248 186" fill="none" stroke="#C6A15B" stroke-width="1" opacity="0.55"/>
+  
+  <g stroke="#B8935B" stroke-width="1.4" fill="none">
+    <circle cx="200" cy="132" r="8" fill="#F3DDD6" stroke="#C6A15B"/>
+    <circle cx="184" cy="140" r="6" fill="#FBF3E7" stroke="#C6A15B"/>
+    <circle cx="216" cy="140" r="6" fill="#FBF3E7" stroke="#C6A15B"/>
+    <path d="M228 130 q10 -14 20 -10" stroke="#8FA377"/>
+    <path d="M172 130 q-10 -14 -20 -10" stroke="#8FA377"/>
+  </g>
+</svg>
