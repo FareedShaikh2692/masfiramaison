@@ -3,7 +3,7 @@ import { BUSINESS } from "@/data/data";
 
 export default function Footer() {
   return (
-    <footer className="text-white/60 text-[0.88rem]" style={{ background: "#34291F" }}>
+    <footer className="print:hidden text-white/60 text-[0.88rem]" style={{ background: "#34291F" }}>
       <div className="container-app flex flex-wrap items-center justify-between gap-5 py-12">
         <span className="font-serif text-lg text-white">{BUSINESS.name}</span>
         <nav className="flex flex-wrap gap-5" aria-label="Footer">

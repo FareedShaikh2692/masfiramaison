@@ -7,12 +7,20 @@ import CustomCakeForm, { CustomOrderSnapshot } from "@/components/order/CustomCa
 import PaymentStep from "@/components/order/PaymentStep";
 import ConfirmationStep from "@/components/order/ConfirmationStep";
 import { formatDate } from "@/lib/format";
+import type { OrderStatus, PaymentMethodConfig } from "@/lib/types";
+import { ORDER_STATUS_LABEL } from "@/lib/types";
 
 type Step = "form" | "payment" | "confirmation";
 
-function buildProductWaMessage(s: OrderSnapshot) {
+function buildProductWaMessage(s: OrderSnapshot, paymentMethod?: PaymentMethodConfig["id"], orderStatus?: OrderStatus) {
+  const isCash = paymentMethod === "cash";
+  const isConfirmed = orderStatus === "confirmed";
   return [
-    "Hello Masfira Maison, I've completed my advance payment.",
+    isCash
+      ? "Hello Masfira Maison, I've placed an order and will pay cash at pickup."
+      : isConfirmed
+        ? "Hello Masfira Maison, my payment just went through and my order is confirmed."
+        : "Hello Masfira Maison, I've completed my advance payment.",
     "",
     `Order ID: ${s.orderId}`,
     `Name: ${s.fullName}`,
@@ -21,16 +29,19 @@ function buildProductWaMessage(s: OrderSnapshot) {
     s.comboFlavor ? `Bento Flavor: ${s.comboFlavor}` : null,
     s.comboCupcakeFlavor ? `Cupcake Flavor: ${s.comboCupcakeFlavor}` : null,
     s.weight ? `Weight: ${s.weight}` : null,
+    s.packSize ? `Pack Size: ${s.packSize}` : null,
     s.quantity ? `Quantity: ${s.quantity}` : null,
     s.design ? `Design: ${s.design}` : null,
     s.cakeMessage ? `Cake Message: ${s.cakeMessage}` : null,
+    s.occasion ? `Occasion: ${s.occasion}` : null,
+    s.addOns && s.addOns.length ? `Add-ons: ${s.addOns.join(", ")}` : null,
     `Delivery/Pickup: ${s.fulfillment === "delivery" ? "Delivery" : "Pickup"}`,
     s.address ? `Address: ${s.address}` : null,
     `Date: ${formatDate(s.preferredDate)}`,
     s.preferredTime ? `Time: ${s.preferredTime}` : null,
     s.specialInstructions ? `Additional Notes: ${s.specialInstructions}` : null,
     "",
-    "Please verify my payment and confirm the order."
+    isCash ? "Please confirm my order." : isConfirmed ? "Looking forward to it!" : "Please verify my payment and confirm the order."
   ]
     .filter(Boolean)
     .join("\n");
@@ -64,6 +75,8 @@ function OrderPanelContent({ mode, prefill, onClose }: { mode: OrderMode; prefil
   const [step, setStep] = useState<Step>("form");
   const [productSnapshot, setProductSnapshot] = useState<OrderSnapshot | null>(null);
   const [customSnapshot, setCustomSnapshot] = useState<CustomOrderSnapshot | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodConfig["id"] | undefined>();
+  const [orderStatus, setOrderStatus] = useState<OrderStatus>("payment_verification");
 
   const titles: Record<string, { title: string; subtitle: string }> = {
     "product-form": { title: "Create Your Cake Order", subtitle: "Tell us what you'd like, and we'll prepare something special for you." },
@@ -100,16 +113,41 @@ function OrderPanelContent({ mode, prefill, onClose }: { mode: OrderMode; prefil
         )}
 
         {mode === "product" && step === "payment" && productSnapshot && (
-          <PaymentStep orderId={productSnapshot.orderId} total={productSnapshot.total} onConfirmed={() => setStep("confirmation")} />
+          <PaymentStep
+            orderId={productSnapshot.orderId}
+            total={productSnapshot.total}
+            cashEligible={productSnapshot.cashEligible}
+            customerName={productSnapshot.fullName}
+            customerPhone={productSnapshot.phone}
+            customerEmail={productSnapshot.email}
+            onConfirmed={(method, status) => {
+              setPaymentMethod(method);
+              setOrderStatus(status);
+              setStep("confirmation");
+            }}
+          />
         )}
 
         {mode === "product" && step === "confirmation" && productSnapshot && (
           <ConfirmationStep
             orderId={productSnapshot.orderId}
-            heading="Your Order Request Has Been Received ❤️"
-            message="Thank you for choosing Masfira Maison. We've received your payment details and will verify them shortly to confirm your order."
-            statusLabel="Payment Verification Pending"
-            waMessage={buildProductWaMessage(productSnapshot)}
+            heading={
+              orderStatus === "confirmed"
+                ? "Your Order Is Confirmed! 🎉"
+                : paymentMethod === "cash"
+                  ? "Your Order Request Has Been Received 🤍"
+                  : "Your Order Request Has Been Received ❤️"
+            }
+            message={
+              orderStatus === "confirmed"
+                ? "Your payment was verified instantly. Masfira Maison is preparing to bake your order fresh for your special moment."
+                : paymentMethod === "cash"
+                  ? "Thank you for choosing Masfira Maison. We've received your order and will confirm it shortly — pay by cash when you collect it."
+                  : "Thank you for choosing Masfira Maison. We've received your payment details and will verify them shortly to confirm your order."
+            }
+            statusLabel={ORDER_STATUS_LABEL[orderStatus]}
+            waMessage={buildProductWaMessage(productSnapshot, paymentMethod, orderStatus)}
+            invoiceHref={`/invoice/${productSnapshot.orderId}`}
             onBackHome={onClose}
           />
         )}
@@ -130,6 +168,7 @@ function OrderPanelContent({ mode, prefill, onClose }: { mode: OrderMode; prefil
             message="Thank you for your custom cake request. Masfira Maison will contact you shortly to discuss the design, availability, and final price."
             statusLabel="Awaiting Confirmation"
             waMessage={buildCustomWaMessage(customSnapshot)}
+            invoiceHref={`/invoice/${customSnapshot.orderId}`}
             onBackHome={onClose}
           />
         )}

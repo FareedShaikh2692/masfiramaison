@@ -60,8 +60,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               description: "Premium homemade cakes, bento cakes and custom celebration cakes, freshly baked to order.",
               telephone: `+${BUSINESS.countryCode}${BUSINESS.phone}`,
               priceRange: "₹₹",
-              sameAs: [BUSINESS.instagramUrl]
-              // TODO: add "address" (PostalAddress) once a business address is finalized.
+              sameAs: [BUSINESS.instagramUrl],
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: BUSINESS.addressLine,
+                addressLocality: BUSINESS.area,
+                addressRegion: BUSINESS.city,
+                postalCode: "411048",
+                addressCountry: "IN"
+              }
             })
           }}
         />

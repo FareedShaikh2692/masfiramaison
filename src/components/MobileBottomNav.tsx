@@ -9,7 +9,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-[800] grid grid-cols-4 bg-[rgba(251,246,238,0.97)] backdrop-blur-md shadow-[0_-6px_24px_rgba(64,51,42,0.12)]"
+      className="print:hidden md:hidden fixed bottom-0 left-0 right-0 z-[800] grid grid-cols-4 bg-[rgba(251,246,238,0.97)] backdrop-blur-md shadow-[0_-6px_24px_rgba(64,51,42,0.12)]"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="Mobile"
     >

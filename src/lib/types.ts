@@ -35,6 +35,7 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
 export type ProductFieldKey =
   | "flavor"
   | "weight"
+  | "packSize"
   | "design"
   | "message"
   | "quantity"
@@ -54,11 +55,18 @@ export interface Product {
   category: string;
   description: string;
   image: string;
-  /** Starting price in INR. `null` renders "Price on request" until configured. */
+  /**
+   * Starting price in INR. `null` renders "Price on request" until configured.
+   * When `fields` includes "quantity" and `pricePerUnit` is true, the line
+   * total is `price * quantity` (e.g. ₹75/slice, ₹150/jar).
+   */
   price: number | null;
+  pricePerUnit?: boolean;
   flavors?: string[];
   /** Falls back to the global WEIGHTS list from data.ts when omitted. */
   weightOptions?: WeightOption[];
+  /** Used when `fields` includes "packSize" (e.g. "6 pcs" / "12 pcs") — same shape as weightOptions. */
+  packOptions?: WeightOption[];
   fields: ProductFieldKey[];
   badge?: string;
   /** Richer visual treatment for the Maison Specials shelf. */
@@ -78,11 +86,30 @@ export interface DeliveryArea {
 }
 
 export interface PaymentMethodConfig {
-  id: "googlepay" | "upi" | "paytm";
+  id: "googlepay" | "upi" | "paytm" | "banktransfer" | "cash";
   label: string;
-  /** Identifier to pay to (UPI ID / phone number). Left blank until configured. */
+  /** Identifier to pay to (UPI ID / phone number / account details). Left blank until configured. */
   identifier: string | null;
+  /** Cash is only offered for pickup orders — never for delivery (no COD). */
+  pickupOnly?: boolean;
 }
+
+export const OCCASIONS = [
+  "Birthday",
+  "Anniversary",
+  "Engagement",
+  "Baby Shower",
+  "Father's Day",
+  "Other"
+];
+
+export const ADD_ONS = ["Name Topper", "Candles", "Photo Print"];
+
+export const PICKUP_SLOTS = [
+  { value: "morning", label: "Morning · 10 AM – 12 PM" },
+  { value: "afternoon", label: "Afternoon · 12 PM – 4 PM" },
+  { value: "evening", label: "Evening · 4 PM – 8 PM" }
+];
 
 export interface GalleryItem {
   id: number;
@@ -115,11 +142,14 @@ export interface OrderRecord {
   comboFlavor?: string;
   comboCupcakeFlavor?: string;
   weight?: string;
+  packSize?: string;
   quantity?: number;
   design?: string;
   theme?: string;
   cakeColor?: string;
   cakeMessage?: string;
+  occasion?: string;
+  addOns?: string[];
   specialInstructions?: string;
   referenceImage?: string | null;
 
@@ -128,6 +158,7 @@ export interface OrderRecord {
   address?: string;
   preferredDate: string;
   preferredTime?: string;
+  pickupSlot?: string;
 
   deliveryCharge: number | null;
   itemPrice: number | null;
@@ -136,4 +167,8 @@ export interface OrderRecord {
   termsAccepted: boolean;
   paymentMethod?: PaymentMethodConfig["id"];
   paymentScreenshot?: string | null;
+  advancePaid?: number | null;
+  balanceDue?: number | null;
+  razorpayPaymentId?: string | null;
+  razorpayOrderId?: string | null;
 }

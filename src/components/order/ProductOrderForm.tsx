@@ -7,8 +7,10 @@ import {
   DESIGN_OPTIONS,
   BASIC_FLAVORS,
   WEIGHTS,
-  DELIVERY_AREAS
+  DELIVERY_AREAS,
+  PAYMENT_METHODS
 } from "@/data/data";
+import { OCCASIONS, ADD_ONS, PICKUP_SLOTS } from "@/lib/types";
 import type { FulfillmentType } from "@/lib/types";
 import { formatDate, minOrderDate, isDateAvailable } from "@/lib/format";
 import OrderSummary from "@/components/order/OrderSummary";
@@ -19,14 +21,18 @@ export interface OrderSnapshot {
   orderId: string;
   fullName: string;
   phone: string;
+  email?: string;
   productName: string;
   flavor?: string;
   comboFlavor?: string;
   comboCupcakeFlavor?: string;
   weight?: string;
+  packSize?: string;
   quantity?: number;
   design?: string;
   cakeMessage?: string;
+  occasion?: string;
+  addOns?: string[];
   specialInstructions?: string;
   fulfillment: FulfillmentType;
   address?: string;
@@ -35,6 +41,7 @@ export interface OrderSnapshot {
   itemPrice: number | null;
   deliveryCharge: number | null;
   total: number | null;
+  cashEligible: boolean;
 }
 
 export default function ProductOrderForm({
@@ -53,9 +60,12 @@ export default function ProductOrderForm({
   const [comboCupcakeFlavor, setComboCupcakeFlavor] = useState("");
   const [weight, setWeight] = useState("");
   const [customWeight, setCustomWeight] = useState("");
+  const [packSize, setPackSize] = useState("");
   const [design, setDesign] = useState(prefill.design || "");
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(3);
   const [cakeMessage, setCakeMessage] = useState("");
+  const [occasion, setOccasion] = useState("");
+  const [addOns, setAddOns] = useState<string[]>([]);
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [fulfillment, setFulfillment] = useState<FulfillmentType>("pickup");
   const [deliveryAreaId, setDeliveryAreaId] = useState(DELIVERY_AREAS[0].id);
@@ -63,7 +73,7 @@ export default function ProductOrderForm({
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const [preferredDate, setPreferredDate] = useState("");
-  const [preferredTime, setPreferredTime] = useState("");
+  const [pickupSlot, setPickupSlot] = useState("");
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -71,18 +81,49 @@ export default function ProductOrderForm({
 
   const product = useMemo(() => PRODUCTS.find((p) => p.id === productId)!, [productId]);
   const weightOptions = product.weightOptions || WEIGHTS;
+  const packOptions = useMemo(() => product.packOptions || [], [product]);
   const minDate = minOrderDate();
+  const cashOption = PAYMENT_METHODS.find((m) => m.id === "cash");
 
   const deliveryArea = DELIVERY_AREAS.find((a) => a.id === deliveryAreaId);
   const deliveryCharge = fulfillment === "delivery" ? deliveryArea?.charge ?? null : 0;
-  const weightAdd = product.fields.includes("weight") ? weightOptions.find((w) => w.value === weight)?.priceAdd ?? null : 0;
-  const itemPrice = product.price != null && weightAdd != null ? product.price + weightAdd : product.price;
+
+  const itemPrice = useMemo(() => {
+    if (product.price == null) return null;
+    if (product.fields.includes("weight")) {
+      const add = weightOptions.find((w) => w.value === weight)?.priceAdd;
+      return add == null ? null : product.price + add;
+    }
+    if (product.fields.includes("packSize")) {
+      const add = packOptions.find((p) => p.value === packSize)?.priceAdd;
+      return add == null ? null : product.price + add;
+    }
+    if (product.fields.includes("quantity") && product.pricePerUnit) {
+      return quantity > 0 ? product.price * quantity : null;
+    }
+    return product.price;
+  }, [product, weightOptions, weight, packOptions, packSize, quantity]);
+
   const total = itemPrice != null && deliveryCharge != null ? itemPrice + deliveryCharge : null;
+  const cashEligible = fulfillment === "pickup";
 
   function weightLabel() {
     if (!product.fields.includes("weight")) return undefined;
     if (weight === "custom") return customWeight ? `${customWeight} (custom)` : "Custom";
     return weightOptions.find((w) => w.value === weight)?.label;
+  }
+
+  function packLabel() {
+    if (!product.fields.includes("packSize")) return undefined;
+    return packOptions.find((p) => p.value === packSize)?.label;
+  }
+
+  function pickupSlotLabel() {
+    return PICKUP_SLOTS.find((s) => s.value === pickupSlot)?.label;
+  }
+
+  function toggleAddOn(name: string) {
+    setAddOns((prev) => (prev.includes(name) ? prev.filter((a) => a !== name) : [...prev, name]));
   }
 
   function validate(): boolean {
@@ -94,14 +135,16 @@ export default function ProductOrderForm({
     if (product.fields.includes("comboFlavor") && !comboFlavor) next.comboFlavor = true;
     if (product.fields.includes("comboCupcakeFlavor") && !comboCupcakeFlavor) next.comboCupcakeFlavor = true;
     if (product.fields.includes("weight") && !weight) next.weight = true;
+    if (product.fields.includes("packSize") && !packSize) next.packSize = true;
     if (product.fields.includes("design") && !design) next.design = true;
     if (product.fields.includes("quantity") && (!quantity || quantity < 1)) next.quantity = true;
+    if (!occasion) next.occasion = true;
     if (fulfillment === "delivery") {
       if (!address.trim()) next.address = true;
       if (!city.trim()) next.city = true;
     }
     if (!preferredDate || !isDateAvailable(preferredDate)) next.preferredDate = true;
-    if (!preferredTime) next.preferredTime = true;
+    if (!pickupSlot) next.pickupSlot = true;
     if (!termsAccepted) next.termsAccepted = true;
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -124,15 +167,19 @@ export default function ProductOrderForm({
       comboFlavor: product.fields.includes("comboFlavor") ? comboFlavor : undefined,
       comboCupcakeFlavor: product.fields.includes("comboCupcakeFlavor") ? comboCupcakeFlavor : undefined,
       weight: weightLabel(),
+      packSize: packLabel(),
       quantity: product.fields.includes("quantity") ? quantity : undefined,
       design: product.fields.includes("design") ? design : undefined,
       cakeMessage: product.fields.includes("message") ? cakeMessage : undefined,
+      occasion,
+      addOns,
       specialInstructions: product.fields.includes("specialInstructions") ? specialInstructions : undefined,
       fulfillment,
       deliveryAreaId: fulfillment === "delivery" ? deliveryAreaId : undefined,
       address: fulfillment === "delivery" ? [address, city, postalCode].filter(Boolean).join(", ") : undefined,
       preferredDate,
-      preferredTime,
+      preferredTime: pickupSlotLabel(),
+      pickupSlot,
       itemPrice,
       deliveryCharge,
       total,
@@ -152,22 +199,27 @@ export default function ProductOrderForm({
         orderId: data.orderId,
         fullName,
         phone,
+        email: email || undefined,
         productName: product.name,
         flavor: payload.flavor,
         comboFlavor: payload.comboFlavor,
         comboCupcakeFlavor: payload.comboCupcakeFlavor,
         weight: payload.weight,
+        packSize: payload.packSize,
         quantity: payload.quantity,
         design: payload.design,
         cakeMessage: payload.cakeMessage,
+        occasion,
+        addOns,
         specialInstructions: payload.specialInstructions,
         fulfillment,
         address: payload.address,
         preferredDate,
-        preferredTime,
+        preferredTime: payload.preferredTime,
         itemPrice,
         deliveryCharge,
-        total
+        total,
+        cashEligible
       });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -182,11 +234,14 @@ export default function ProductOrderForm({
     ...(product.fields.includes("comboFlavor") ? [{ label: "Bento Flavor", value: comboFlavor }] : []),
     ...(product.fields.includes("comboCupcakeFlavor") ? [{ label: "Cupcake Flavor", value: comboCupcakeFlavor }] : []),
     ...(product.fields.includes("weight") ? [{ label: "Weight", value: weightLabel() || "" }] : []),
+    ...(product.fields.includes("packSize") ? [{ label: "Pack Size", value: packLabel() || "" }] : []),
     ...(product.fields.includes("design") ? [{ label: "Design", value: design }] : []),
     ...(product.fields.includes("quantity") ? [{ label: "Quantity", value: String(quantity) }] : []),
+    { label: "Occasion", value: occasion },
     { label: "Delivery / Pickup", value: fulfillment === "delivery" ? "Delivery" : "Pickup" },
     ...(fulfillment === "delivery" ? [{ label: "Delivery Area", value: deliveryArea?.name || "" }] : []),
-    { label: "Date", value: formatDate(preferredDate) }
+    { label: "Date", value: formatDate(preferredDate) },
+    ...(pickupSlot ? [{ label: "Time Slot", value: pickupSlotLabel() || "" }] : [])
   ];
 
   return (
@@ -203,6 +258,17 @@ export default function ProductOrderForm({
             <input className="field-input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Optional" type="email" />
           </Field>
         </div>
+      </FormSection>
+
+      <FormSection title="Occasion">
+        <Field label="What are you celebrating?" error={errors.occasion}>
+          <select className="field-input" value={occasion} onChange={(e) => setOccasion(e.target.value)}>
+            <option value="" disabled>Choose an occasion</option>
+            {OCCASIONS.map((o) => (
+              <option key={o} value={o}>{o}</option>
+            ))}
+          </select>
+        </Field>
       </FormSection>
 
       <FormSection title="Choose Your Product">
@@ -263,12 +329,27 @@ export default function ProductOrderForm({
             <select className="field-input" value={weight} onChange={(e) => setWeight(e.target.value)}>
               <option value="" disabled>Choose a weight</option>
               {weightOptions.map((w) => (
-                <option key={w.value} value={w.value}>{w.label}</option>
+                <option key={w.value} value={w.value}>
+                  {w.label}{w.priceAdd != null ? ` — ₹${w.priceAdd}` : ""}
+                </option>
               ))}
             </select>
             {weight === "custom" && (
               <input className="field-input mt-2.5" value={customWeight} onChange={(e) => setCustomWeight(e.target.value)} placeholder="e.g. 4 kg" />
             )}
+          </Field>
+        )}
+
+        {product.fields.includes("packSize") && (
+          <Field label="Pack Size" error={errors.packSize}>
+            <select className="field-input" value={packSize} onChange={(e) => setPackSize(e.target.value)}>
+              <option value="" disabled>Choose a pack size</option>
+              {packOptions.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}{p.priceAdd != null ? ` — ₹${p.priceAdd}` : ""}
+                </option>
+              ))}
+            </select>
           </Field>
         )}
 
@@ -284,7 +365,7 @@ export default function ProductOrderForm({
         )}
 
         {product.fields.includes("quantity") && (
-          <Field label="Quantity" error={errors.quantity}>
+          <Field label={product.pricePerUnit ? `Quantity (₹${product.price} each)` : "Quantity"} error={errors.quantity}>
             <input className="field-input" type="number" min={1} value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
           </Field>
         )}
@@ -294,6 +375,22 @@ export default function ProductOrderForm({
             <input className="field-input" value={cakeMessage} onChange={(e) => setCakeMessage(e.target.value)} placeholder="Happy Birthday Sarah!" maxLength={60} />
           </Field>
         )}
+
+        <Field label="Extra Add-ons (optional)">
+          <div className="flex flex-wrap gap-2.5">
+            {ADD_ONS.map((a) => (
+              <label
+                key={a}
+                className={`px-3.5 py-2 rounded-full border text-[0.84rem] cursor-pointer transition-colors ${
+                  addOns.includes(a) ? "border-gold bg-blush-soft text-ink" : "border-border bg-ivory text-text-muted"
+                }`}
+              >
+                <input type="checkbox" className="hidden" checked={addOns.includes(a)} onChange={() => toggleAddOn(a)} />
+                {a}
+              </label>
+            ))}
+          </div>
+        </Field>
 
         {product.fields.includes("specialInstructions") && (
           <Field label="Special Instructions">
@@ -345,20 +442,30 @@ export default function ProductOrderForm({
         ) : (
           <div className="rounded-[10px] px-4 py-3.5 text-[0.84rem] text-ink flex gap-2.5" style={{ background: "var(--blush-soft)" }}>
             <span>📍</span>
-            <span>Pickup details (address &amp; timing) will be shared once your order is confirmed.</span>
+            <span>Pickup from {cashOption ? "our Kondhwa location" : "our location"} — the exact address is shared once your order is confirmed.</span>
           </div>
         )}
       </FormSection>
 
       <FormSection title="Date & Time">
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Preferred Date" error={errors.preferredDate}>
-            <input className="field-input" type="date" min={minDate} value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} />
-          </Field>
-          <Field label="Preferred Time" error={errors.preferredTime}>
-            <input className="field-input" type="time" value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} />
-          </Field>
-        </div>
+        <Field label="Preferred Date" error={errors.preferredDate}>
+          <input className="field-input" type="date" min={minDate} value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} />
+        </Field>
+        <Field label="Preferred Time Slot" error={errors.pickupSlot}>
+          <div className="flex flex-col gap-2.5">
+            {PICKUP_SLOTS.map((slot) => (
+              <label
+                key={slot.value}
+                className={`flex items-center gap-2.5 px-4 py-3 rounded-[10px] border cursor-pointer transition-colors ${
+                  pickupSlot === slot.value ? "border-gold bg-blush-soft" : "border-border bg-ivory"
+                }`}
+              >
+                <input type="radio" name="pickupSlot" value={slot.value} checked={pickupSlot === slot.value} onChange={() => setPickupSlot(slot.value)} className="w-[18px] h-[18px] accent-[var(--gold-dark)]" />
+                <span className="text-[0.9rem] text-ink">{slot.label}</span>
+              </label>
+            ))}
+          </div>
+        </Field>
         <p className="field-hint">Please place your order in advance so we can prepare your cake fresh for your special occasion.</p>
       </FormSection>
 

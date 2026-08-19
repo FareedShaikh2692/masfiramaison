@@ -8,6 +8,7 @@ export default function ConfirmationStep({
   message,
   statusLabel,
   waMessage,
+  invoiceHref,
   onBackHome
 }: {
   orderId: string;
@@ -15,6 +16,7 @@ export default function ConfirmationStep({
   message: string;
   statusLabel: string;
   waMessage: string;
+  invoiceHref?: string;
   onBackHome: () => void;
 }) {
   return (
@@ -34,6 +36,11 @@ export default function ConfirmationStep({
         <a href={waLink(waMessage)} target="_blank" rel="noopener" className="btn btn-whatsapp btn-block">
           Contact Us on WhatsApp
         </a>
+        {invoiceHref && (
+          <a href={invoiceHref} target="_blank" rel="noopener" className="btn btn-outline btn-block">
+            View Invoice
+          </a>
+        )}
         <button onClick={onBackHome} className="btn btn-outline btn-block">
           Back to Home
         </button>

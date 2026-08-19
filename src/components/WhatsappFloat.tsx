@@ -9,7 +9,7 @@ export default function WhatsappFloat() {
       target="_blank"
       rel="noopener"
       aria-label="Chat with us on WhatsApp"
-      className="fixed right-4 md:right-6 bottom-[92px] md:bottom-6 z-[790] w-[52px] h-[52px] md:w-[58px] md:h-[58px] rounded-full flex items-center justify-center shadow-[0_12px_30px_rgba(37,211,102,0.45)] hover:scale-105 transition-transform"
+      className="print:hidden fixed right-4 md:right-6 bottom-[92px] md:bottom-6 z-[790] w-[52px] h-[52px] md:w-[58px] md:h-[58px] rounded-full flex items-center justify-center shadow-[0_12px_30px_rgba(37,211,102,0.45)] hover:scale-105 transition-transform"
       style={{ background: "#25D366" }}
     >
       <svg viewBox="0 0 32 32" className="w-7 h-7 fill-white">

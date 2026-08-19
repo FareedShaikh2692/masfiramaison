@@ -36,11 +36,14 @@ export async function POST(req: NextRequest) {
     comboFlavor: body.comboFlavor || undefined,
     comboCupcakeFlavor: body.comboCupcakeFlavor || undefined,
     weight: body.weight || undefined,
+    packSize: body.packSize || undefined,
     quantity: body.quantity || undefined,
     design: body.design || undefined,
     theme: body.theme || undefined,
     cakeColor: body.cakeColor || undefined,
     cakeMessage: body.cakeMessage || undefined,
+    occasion: body.occasion || undefined,
+    addOns: Array.isArray(body.addOns) && body.addOns.length ? body.addOns : undefined,
     specialInstructions: body.specialInstructions || undefined,
     referenceImage,
 
@@ -49,6 +52,7 @@ export async function POST(req: NextRequest) {
     address: body.address || undefined,
     preferredDate: body.preferredDate,
     preferredTime: body.preferredTime || undefined,
+    pickupSlot: body.pickupSlot || undefined,
 
     deliveryCharge: body.deliveryCharge ?? null,
     itemPrice: body.itemPrice ?? null,

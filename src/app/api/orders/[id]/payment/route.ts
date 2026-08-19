@@ -1,23 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateOrder, saveUploadedImage } from "@/lib/orderStore";
+import { updateOrder, saveUploadedImage, readOrders } from "@/lib/orderStore";
+import type { OrderStatus } from "@/lib/types";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
 
-  if (!body.paymentMethod || !body.paymentScreenshot) {
-    return NextResponse.json({ error: "Payment method and screenshot are required." }, { status: 400 });
+  if (!body.paymentMethod) {
+    return NextResponse.json({ error: "Payment method is required." }, { status: 400 });
   }
 
-  const filename = await saveUploadedImage(body.paymentScreenshot, "payment");
-  if (!filename) {
-    return NextResponse.json({ error: "Could not read payment screenshot." }, { status: 400 });
+  const isCash = body.paymentMethod === "cash";
+
+  if (!isCash && !body.paymentScreenshot) {
+    return NextResponse.json({ error: "A payment screenshot is required for online payment methods." }, { status: 400 });
   }
+
+  let filename: string | null = null;
+  if (!isCash) {
+    filename = await saveUploadedImage(body.paymentScreenshot, "payment");
+    if (!filename) {
+      return NextResponse.json({ error: "Could not read payment screenshot." }, { status: 400 });
+    }
+  }
+
+  const orders = await readOrders();
+  const existing = orders.find((o) => o.orderId === id);
+  if (!existing) {
+    return NextResponse.json({ error: "Order not found." }, { status: 404 });
+  }
+
+  const advancePaid: number | null = isCash ? null : (typeof body.advancePaid === "number" ? body.advancePaid : existing.total);
+  const balanceDue: number | null =
+    existing.total != null && advancePaid != null ? Math.max(existing.total - advancePaid, 0) : existing.total;
+
+  // Cash orders have no online proof to verify — they stay "payment_pending" (cash is
+  // collected at pickup) rather than moving into the manual-verification queue.
+  const status: OrderStatus = isCash ? "payment_pending" : "payment_verification";
 
   const updated = await updateOrder(id, {
     paymentMethod: body.paymentMethod,
     paymentScreenshot: filename,
-    status: "payment_verification"
+    advancePaid,
+    balanceDue,
+    status
   });
 
   if (!updated) {

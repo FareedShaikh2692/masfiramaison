@@ -33,8 +33,9 @@ export const BUSINESS = {
   email: "",
   instagramHandle: "@masfiramaison",
   instagramUrl: "https://instagram.com/masfiramaison",
-  // TODO: add city/area for local SEO structured data — not provided yet.
-  city: "",
+  city: "Pune",
+  area: "Kondhwa",
+  addressLine: "Near Omkar Garden Hall, Kondhwa, Pune – 411048",
   currencySymbol: "₹",
   // Minimum days' notice required before a pickup/delivery date.
   leadTimeDays: 2,
@@ -57,7 +58,9 @@ export const BASIC_FLAVORS = [
   "Rose"
 ];
 
-export const TRES_LECHES_FLAVORS = ["Vanilla", "Chocolate", "Red Velvet", "Rose", "Mawa"];
+export const TRES_LECHES_FLAVORS = ["Chocolate", "Vanilla", "Strawberry", "Paan"];
+
+export const JAR_FLAVORS = ["Vanilla", "Strawberry", "Red Velvet", "Chocolate", "Truffle"];
 
 export const DESIGN_OPTIONS = [
   "Simple & Elegant",
@@ -70,11 +73,35 @@ export const DESIGN_OPTIONS = [
 
 // Fallback weight ladder used when a product doesn't define its own.
 export const WEIGHTS: WeightOption[] = [
-  { label: "500 g", value: "500g", priceAdd: null },
+  { label: "½ kg", value: "0.5kg", priceAdd: null },
   { label: "1 kg", value: "1kg", priceAdd: null },
   { label: "1.5 kg", value: "1.5kg", priceAdd: null },
   { label: "2 kg", value: "2kg", priceAdd: null },
   { label: "Custom Weight", value: "custom", priceAdd: null }
+];
+
+// Basic Cakes — Vanilla, Strawberry, Chocolate, Butterscotch, Red Velvet. Basic finish included.
+export const BASIC_CAKE_WEIGHTS: WeightOption[] = [
+  { label: "½ kg", value: "0.5kg", priceAdd: 450 },
+  { label: "1 kg", value: "1kg", priceAdd: 750 },
+  { label: "1.5 kg", value: "1.5kg", priceAdd: 1050 },
+  { label: "2 kg", value: "2kg", priceAdd: 1300 },
+  { label: "Custom Weight", value: "custom", priceAdd: null }
+];
+
+// Truffle Cake — premium truffle finish.
+export const TRUFFLE_CAKE_WEIGHTS: WeightOption[] = [
+  { label: "½ kg", value: "0.5kg", priceAdd: 550 },
+  { label: "1 kg", value: "1kg", priceAdd: 950 },
+  { label: "1.5 kg", value: "1.5kg", priceAdd: 1350 },
+  { label: "2 kg", value: "2kg", priceAdd: 1750 },
+  { label: "Custom Weight", value: "custom", priceAdd: null }
+];
+
+// Cupcakes — sold by the pack, same flavors as Basic Cakes.
+export const CUPCAKE_PACKS: WeightOption[] = [
+  { label: "6 pcs", value: "6pcs", priceAdd: 330 },
+  { label: "12 pcs", value: "12pcs", priceAdd: 600 }
 ];
 
 export const CAKE_TYPES_FOR_CUSTOM = [
@@ -115,9 +142,10 @@ export const PRODUCTS: Product[] = [
     id: "basic-cake",
     name: "Basic Cakes",
     category: "basic",
-    description: "Classic homemade cakes in the flavors everyone loves.",
+    description: "Classic homemade cakes in the flavors everyone loves. Basic finish included.",
     image: "/images/cake-vanilla.svg",
-    price: null,
+    price: 0,
+    weightOptions: BASIC_CAKE_WEIGHTS,
     flavors: BASIC_FLAVORS,
     fields: ["flavor", "weight", "design", "message", "specialInstructions"]
   },
@@ -125,18 +153,19 @@ export const PRODUCTS: Product[] = [
     id: "truffle-cake",
     name: "Truffle Cake",
     category: "truffle",
-    description: "A rich, silky chocolate truffle cake for true chocolate lovers.",
+    description: "Rich chocolate truffle goodness, with a premium truffle finish.",
     image: "/images/cake-chocolate.svg",
-    price: null,
+    price: 0,
+    weightOptions: TRUFFLE_CAKE_WEIGHTS,
     fields: ["weight", "design", "message", "specialInstructions"]
   },
   {
     id: "bento-cake",
     name: "Bento Cake",
     category: "bento",
-    description: "Cute, personal-sized cakes — perfect for small, sweet celebrations.",
+    description: "Cute, personal-sized cakes — perfect for small, sweet celebrations. Basic design included; custom design ₹449 onwards.",
     image: "/images/cake-custom.svg",
-    price: null,
+    price: 349,
     flavors: BASIC_FLAVORS,
     fields: ["flavor", "design", "message"]
   },
@@ -144,9 +173,9 @@ export const PRODUCTS: Product[] = [
     id: "tres-leches",
     name: "Tres Leches Milk Cake",
     category: "tres-leches",
-    description: "Soaked, soft and irresistibly milky — a Masfira Maison favorite.",
+    description: "Soft, moist & milky delight — sold per box.",
     image: "/images/cake-vanilla.svg",
-    price: null,
+    price: 199,
     flavors: TRES_LECHES_FLAVORS,
     fields: ["flavor"]
   },
@@ -154,48 +183,61 @@ export const PRODUCTS: Product[] = [
     id: "tiramisu-box",
     name: "Tiramisu Cake Box",
     category: "tiramisu",
-    description: "Classic layered tiramisu, boxed and ready to gift or enjoy.",
+    description: "Classic coffee & cream layers, boxed and ready to gift or enjoy.",
     image: "/images/cake-butterscotch.svg",
-    price: null,
+    price: 229,
+    pricePerUnit: true,
     fields: ["quantity", "specialInstructions"]
   },
   {
     id: "jar-cake",
     name: "Jar Cake",
     category: "jar",
-    description: "Individually portioned cake jars — easy to share, fun to gift.",
+    description: "Individually portioned cake jars — easy to share, fun to gift. Box of 4 for ₹560.",
     image: "/images/cake-redvelvet.svg",
-    price: null,
-    flavors: BASIC_FLAVORS,
+    price: 150,
+    pricePerUnit: true,
+    flavors: JAR_FLAVORS,
     fields: ["flavor", "quantity"]
   },
   {
     id: "cupcakes",
     name: "Cupcakes",
     category: "cupcakes",
-    description: "Freshly baked cupcakes, made to order in your favorite flavor.",
+    description: "Freshly baked cupcakes, made to order — same flavours as Basic Cakes.",
     image: "/images/category-kids.svg",
-    price: null,
+    price: 0,
+    packOptions: CUPCAKE_PACKS,
     flavors: BASIC_FLAVORS,
-    fields: ["flavor", "quantity", "specialInstructions"]
+    fields: ["flavor", "packSize", "specialInstructions"]
   },
   {
     id: "bento-cupcake-combo",
-    name: "Bento + 6 Cupcakes Combo",
+    name: "Bento Cake + 6 Cupcakes Combo",
     category: "combo",
-    description: "Our most-loved pairing — a bento cake with six matching cupcakes.",
+    description: "Our most-loved pairing. Basic designs only; custom combo ₹649 onwards.",
     image: "/images/category-celebration.svg",
-    price: null,
+    price: 579,
     fields: ["comboFlavor", "comboCupcakeFlavor", "specialInstructions"],
-    badge: "Recommended"
+    badge: "Best Combo"
   },
   {
-    id: "marble-loaf",
-    name: "Marble Cake Loaf Slice",
+    id: "tea-cake-loaf",
+    name: "Tea Cake",
     category: "marble",
-    description: "A simple, beautiful marble loaf — sliced and ready to enjoy.",
+    description: "A simple, beautiful loaf cake — priced onwards.",
     image: "/images/cake-vanilla.svg",
-    price: null,
+    price: 280,
+    fields: []
+  },
+  {
+    id: "marble-slices",
+    name: "Marble Cake",
+    category: "marble",
+    description: "Sliced marble cake, priced per slice. Minimum 3 slices.",
+    image: "/images/cake-vanilla.svg",
+    price: 75,
+    pricePerUnit: true,
     fields: ["quantity"]
   },
 
@@ -251,14 +293,18 @@ export const DELIVERY_AREAS: DeliveryArea[] = [
 
 /* ============================================================
    PAYMENT
-   Masfira Maison accepts Google Pay, UPI and Paytm — no COD.
+   Masfira Maison accepts Google Pay, UPI, Paytm and Bank Transfer
+   for every order. Cash is accepted only when collecting an order
+   in person at pickup — never for delivery (no COD).
    Identifiers/QR codes are left blank until the business shares
    them; the UI falls back to "shared with you directly" copy.
    ============================================================ */
 export const PAYMENT_METHODS: PaymentMethodConfig[] = [
   { id: "googlepay", label: "Google Pay", identifier: null },
   { id: "upi", label: "UPI", identifier: null },
-  { id: "paytm", label: "Paytm", identifier: null }
+  { id: "paytm", label: "Paytm", identifier: null },
+  { id: "banktransfer", label: "Bank Transfer", identifier: null },
+  { id: "cash", label: "Cash", identifier: "Pay at pickup", pickupOnly: true }
 ];
 
 export const CASH_ON_DELIVERY_AVAILABLE = false;
@@ -284,7 +330,7 @@ export const TERMS = [
   },
   {
     title: "7. Payment",
-    text: "We accept Google Pay, UPI, and Paytm. Cash on Delivery is not available."
+    text: "We accept Google Pay, UPI, Paytm and Bank Transfer. Cash is accepted only at pickup — Cash on Delivery is not available."
   }
 ];
 
@@ -306,7 +352,7 @@ export const HOW_TO_ORDER = [
   { step: "01", title: "Choose Your Cake", text: "Browse the Masfira Maison menu." },
   { step: "02", title: "Customize", text: "Select flavor, weight, design, message, and other preferences." },
   { step: "03", title: "Choose Delivery or Pickup", text: "Provide your preferred date and location." },
-  { step: "04", title: "Make Advance Payment", text: "Pay using Google Pay, UPI, or Paytm." },
+  { step: "04", title: "Make Advance Payment", text: "Pay using Google Pay, UPI, Paytm or Bank Transfer (cash accepted at pickup)." },
   { step: "05", title: "Order Confirmed", text: "Your order is confirmed after payment verification." },
   { step: "06", title: "Enjoy Your Cake", text: "Freshly baked and prepared for your special moment." }
 ];
