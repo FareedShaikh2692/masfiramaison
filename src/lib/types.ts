@@ -19,7 +19,8 @@ export type OrderStatus =
   | "confirmed" // payment verified by the business
   | "preparing"
   | "ready"
-  | "completed";
+  | "completed"
+  | "cancelled"; // admin-only — the order flow never sets this itself
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   pending: "Order Request Received",
@@ -28,7 +29,8 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   confirmed: "Order Confirmed",
   preparing: "Preparing Your Cake",
   ready: "Ready For Pickup / Delivery",
-  completed: "Completed"
+  completed: "Completed",
+  cancelled: "Cancelled"
 };
 
 /** Which optional customization fields a given product exposes in the order form. */

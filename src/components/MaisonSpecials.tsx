@@ -1,8 +1,11 @@
-import { PRODUCTS } from "@/data/data";
+import { listProducts } from "@/lib/catalogStore";
 import ProductCard from "@/components/ProductCard";
 
-export default function MaisonSpecials() {
-  const specials = PRODUCTS.filter((p) => p.category === "specials");
+export default async function MaisonSpecials() {
+  const products = await listProducts({ activeOnly: true });
+  const specials = products.filter((p) => p.category === "specials");
+
+  if (!specials.length) return null;
 
   return (
     <section

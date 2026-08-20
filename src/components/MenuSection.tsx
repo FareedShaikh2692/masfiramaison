@@ -1,8 +1,9 @@
-import { PRODUCTS } from "@/data/data";
+import { listProducts } from "@/lib/catalogStore";
 import ProductCard from "@/components/ProductCard";
 
-export default function MenuSection() {
-  const menuProducts = PRODUCTS.filter((p) => p.category !== "specials");
+export default async function MenuSection() {
+  const products = await listProducts({ activeOnly: true });
+  const menuProducts = products.filter((p) => p.category !== "specials");
 
   return (
     <section id="menu" className="py-28">
@@ -14,11 +15,15 @@ export default function MenuSection() {
             From everyday favorites to signature combos — every item is baked fresh once you order.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {menuProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        {menuProducts.length === 0 ? (
+          <p className="text-center text-text-muted">Our menu is being updated — check back shortly.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {menuProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

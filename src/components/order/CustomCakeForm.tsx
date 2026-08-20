@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { CAKE_TYPES_FOR_CUSTOM, BASIC_FLAVORS, WEIGHTS, DESIGN_OPTIONS } from "@/data/data";
+import { useEffect, useRef, useState } from "react";
+import { CAKE_TYPES_FOR_CUSTOM, WEIGHTS, DESIGN_OPTIONS } from "@/data/data";
 import { minOrderDate, isDateAvailable } from "@/lib/format";
 import TermsCheckbox from "@/components/order/TermsCheckbox";
 
@@ -41,6 +41,14 @@ export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s:
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [flavorsList, setFlavorsList] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("/api/catalog")
+      .then((r) => r.json())
+      .then((data) => setFlavorsList(data.flavors || []))
+      .catch(() => setFlavorsList([]));
+  }, []);
 
   function handleFile(file: File | undefined) {
     if (!file || !file.type.startsWith("image/")) return;
@@ -148,7 +156,7 @@ export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s:
         <Field label="Flavor" error={errors.flavor}>
           <select className="field-input" value={flavor} onChange={(e) => setFlavor(e.target.value)}>
             <option value="" disabled>Choose a flavor</option>
-            {BASIC_FLAVORS.map((f) => (
+            {flavorsList.map((f) => (
               <option key={f} value={f}>{f}</option>
             ))}
             <option value="Custom">Custom / Discuss with us</option>

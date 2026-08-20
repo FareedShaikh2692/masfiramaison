@@ -1,15 +1,8 @@
-import { neon } from "@neondatabase/serverless";
+import { getSql } from "@/lib/db";
 import type { OrderRecord } from "@/lib/types";
 
 /**
- * Order store backed by Postgres (Neon, connected via the Vercel Marketplace
- * integration).
- *
- * Uses Neon's own serverless driver rather than @vercel/postgres — that
- * package validates connection strings against the format its own
- * first-party "Vercel Postgres" product used to produce, and rejects the
- * Neon marketplace integration's string with a false "use a pooled
- * connection" error even though POSTGRES_URL here is already pooled.
+ * Order store backed by Postgres — see src/lib/db.ts for the client.
  *
  * Orders are stored as a JSONB blob per row rather than a rigid column-per-field
  * schema — OrderRecord has many optional fields that change as the order form
@@ -21,20 +14,12 @@ import type { OrderRecord } from "@/lib/types";
  * different backend later only means rewriting this one file.
  */
 
-function sqlClient() {
-  const connectionString = process.env.POSTGRES_URL;
-  if (!connectionString) {
-    throw new Error("POSTGRES_URL is not set — connect a Postgres database in the Vercel dashboard (Project → Storage).");
-  }
-  return neon(connectionString);
-}
-
 const MAX_IMAGE_DATA_URL_LENGTH = 4 * 1024 * 1024; // ~3MB of image data as base64
 
 let tableReady: Promise<void> | null = null;
 function ensureTable(): Promise<void> {
   if (!tableReady) {
-    const sql = sqlClient();
+    const sql = getSql();
     tableReady = sql`
       CREATE TABLE IF NOT EXISTS orders (
         order_id TEXT PRIMARY KEY,
@@ -49,14 +34,14 @@ function ensureTable(): Promise<void> {
 
 export async function readOrders(): Promise<OrderRecord[]> {
   await ensureTable();
-  const sql = sqlClient();
+  const sql = getSql();
   const rows = await sql`SELECT data FROM orders ORDER BY created_at ASC`;
   return rows.map((r) => r.data as OrderRecord);
 }
 
 export async function saveOrder(order: OrderRecord): Promise<void> {
   await ensureTable();
-  const sql = sqlClient();
+  const sql = getSql();
   await sql`
     INSERT INTO orders (order_id, created_at, updated_at, data)
     VALUES (${order.orderId}, ${order.createdAt}, ${order.updatedAt}, ${JSON.stringify(order)}::jsonb)
@@ -69,7 +54,7 @@ export async function updateOrder(
   patch: Partial<OrderRecord>
 ): Promise<OrderRecord | null> {
   await ensureTable();
-  const sql = sqlClient();
+  const sql = getSql();
   const rows = await sql`SELECT data FROM orders WHERE order_id = ${orderId}`;
   if (!rows.length) return null;
 

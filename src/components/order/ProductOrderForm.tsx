@@ -1,21 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  PRODUCTS,
-  CATEGORIES,
-  DESIGN_OPTIONS,
-  BASIC_FLAVORS,
-  WEIGHTS,
-  DELIVERY_AREAS,
-  PAYMENT_METHODS
-} from "@/data/data";
+import { useEffect, useMemo, useState } from "react";
+import { DESIGN_OPTIONS, WEIGHTS, DELIVERY_AREAS, PAYMENT_METHODS } from "@/data/data";
 import { OCCASIONS, ADD_ONS, PICKUP_SLOTS } from "@/lib/types";
-import type { FulfillmentType } from "@/lib/types";
+import type { FulfillmentType, Product } from "@/lib/types";
 import { formatDate, minOrderDate, isDateAvailable } from "@/lib/format";
 import OrderSummary from "@/components/order/OrderSummary";
 import TermsCheckbox from "@/components/order/TermsCheckbox";
 import type { OrderPrefill } from "@/components/order/OrderContext";
+
+const EMPTY_PRODUCT: Product = { id: "", name: "", category: "", description: "", image: "", price: null, fields: [] };
 
 export interface OrderSnapshot {
   orderId: string;
@@ -51,10 +45,15 @@ export default function ProductOrderForm({
   prefill: OrderPrefill;
   onOrderCreated: (snapshot: OrderSnapshot) => void;
 }) {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [flavorsList, setFlavorsList] = useState<string[]>([]);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
+
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [productId, setProductId] = useState(prefill.productId || PRODUCTS[0].id);
+  const [productId, setProductId] = useState(prefill.productId || "");
   const [flavor, setFlavor] = useState(prefill.flavor || "");
   const [comboFlavor, setComboFlavor] = useState("");
   const [comboCupcakeFlavor, setComboCupcakeFlavor] = useState("");
@@ -79,7 +78,26 @@ export default function ProductOrderForm({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const product = useMemo(() => PRODUCTS.find((p) => p.id === productId)!, [productId]);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/catalog")
+      .then((r) => r.json())
+      .then((data) => {
+        if (cancelled) return;
+        setProducts(data.products || []);
+        setCategories(data.categories || []);
+        setFlavorsList(data.flavors || []);
+        setProductId((current) => current || prefill.productId || data.products?.[0]?.id || "");
+        setCatalogLoaded(true);
+      })
+      .catch(() => setCatalogLoaded(true));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const product = useMemo(() => products.find((p) => p.id === productId) || EMPTY_PRODUCT, [products, productId]);
   const weightOptions = product.weightOptions || WEIGHTS;
   const packOptions = useMemo(() => product.packOptions || [], [product]);
   const minDate = minOrderDate();
@@ -244,6 +262,13 @@ export default function ProductOrderForm({
     ...(pickupSlot ? [{ label: "Time Slot", value: pickupSlotLabel() || "" }] : [])
   ];
 
+  if (!catalogLoaded) {
+    return <p className="text-center text-text-muted py-16">Loading menu…</p>;
+  }
+  if (!products.length) {
+    return <p className="text-center text-text-muted py-16">Our menu is being updated — please check back shortly, or reach out on WhatsApp.</p>;
+  }
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8" noValidate>
       <FormSection title="Customer Details">
@@ -274,8 +299,8 @@ export default function ProductOrderForm({
       <FormSection title="Choose Your Product">
         <Field label="Product">
           <select className="field-input" value={productId} onChange={(e) => setProductId(e.target.value)}>
-            {CATEGORIES.map((cat) => {
-              const items = PRODUCTS.filter((p) => p.category === cat.id);
+            {categories.map((cat) => {
+              const items = products.filter((p) => p.category === cat.id);
               if (!items.length) return null;
               return (
                 <optgroup key={cat.id} label={cat.name}>
@@ -307,7 +332,7 @@ export default function ProductOrderForm({
           <Field label="Bento Cake Flavor" error={errors.comboFlavor}>
             <select className="field-input" value={comboFlavor} onChange={(e) => setComboFlavor(e.target.value)}>
               <option value="" disabled>Choose a flavor</option>
-              {BASIC_FLAVORS.map((f) => (
+              {flavorsList.map((f) => (
                 <option key={f} value={f}>{f}</option>
               ))}
             </select>
@@ -317,7 +342,7 @@ export default function ProductOrderForm({
           <Field label="Cupcake Flavor" error={errors.comboCupcakeFlavor}>
             <select className="field-input" value={comboCupcakeFlavor} onChange={(e) => setComboCupcakeFlavor(e.target.value)}>
               <option value="" disabled>Choose a flavor</option>
-              {BASIC_FLAVORS.map((f) => (
+              {flavorsList.map((f) => (
                 <option key={f} value={f}>{f}</option>
               ))}
             </select>
