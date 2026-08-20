@@ -65,7 +65,7 @@ export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s:
     const next: Record<string, boolean> = {};
     if (!fullName.trim()) next.fullName = true;
     if (!/^[0-9+\-\s()]{7,15}$/.test(phone.trim())) next.phone = true;
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = true;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = true;
     if (!cakeType) next.cakeType = true;
     if (!flavor) next.flavor = true;
     if (!weight) next.weight = true;
@@ -143,7 +143,7 @@ export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s:
             <input className="field-input" value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" />
           </Field>
           <Field label="Email" error={errors.email}>
-            <input className="field-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Optional" />
+            <input className="field-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
           </Field>
         </div>
       </FormSection>

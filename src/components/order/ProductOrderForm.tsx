@@ -189,7 +189,7 @@ export default function ProductOrderForm({
     const next: Record<string, boolean> = {};
     if (!fullName.trim()) next.fullName = true;
     if (!/^[0-9+\-\s()]{7,15}$/.test(phone.trim())) next.phone = true;
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = true;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) next.email = true;
     if (product.fields.includes("flavor") && !flavor) next.flavor = true;
     if (product.fields.includes("comboFlavor") && !comboFlavor) next.comboFlavor = true;
     if (product.fields.includes("comboCupcakeFlavor") && !comboCupcakeFlavor) next.comboCupcakeFlavor = true;
@@ -326,7 +326,7 @@ export default function ProductOrderForm({
             <input className="field-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10-digit number" inputMode="tel" />
           </Field>
           <Field label="Email Address" error={errors.email}>
-            <input className="field-input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Optional" type="email" />
+            <input className="field-input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" type="email" />
           </Field>
         </div>
       </FormSection>
