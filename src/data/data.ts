@@ -40,7 +40,12 @@ export const BUSINESS = {
   // Minimum days' notice required before a pickup/delivery date.
   leadTimeDays: 2,
   closedWeekdays: [] as number[], // 0 = Sunday ... 6 = Saturday
-  blackoutDates: [] as string[] // "YYYY-MM-DD"
+  blackoutDates: [] as string[], // "YYYY-MM-DD"
+  pickupSlots: [
+    { value: "morning", label: "Morning · 10 AM – 12 PM" },
+    { value: "afternoon", label: "Afternoon · 12 PM – 4 PM" },
+    { value: "evening", label: "Evening · 4 PM – 8 PM" }
+  ] as { value: string; label: string }[]
 };
 
 export const WHATSAPP_GREETING = "Hello Masfira Maison, I'd like to place a cake order.";

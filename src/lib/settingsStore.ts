@@ -16,6 +16,7 @@ export interface BusinessSettings {
   leadTimeDays: number;
   closedWeekdays: number[];
   blackoutDates: string[];
+  pickupSlots: { value: string; label: string }[];
 }
 
 export interface TermsItem {

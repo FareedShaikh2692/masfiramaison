@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { DESIGN_OPTIONS, WEIGHTS } from "@/data/data";
-import { OCCASIONS, ADD_ONS, PICKUP_SLOTS } from "@/lib/types";
+import { OCCASIONS, ADD_ONS } from "@/lib/types";
 import type { FulfillmentType, Product } from "@/lib/types";
 import { formatDate, minOrderDate, isDateAvailable } from "@/lib/format";
 import OrderSummary from "@/components/order/OrderSummary";
@@ -176,7 +176,7 @@ export default function ProductOrderForm({
   }
 
   function pickupSlotLabel() {
-    return PICKUP_SLOTS.find((s) => s.value === pickupSlot)?.label;
+    return business.pickupSlots.find((s) => s.value === pickupSlot)?.label;
   }
 
   function toggleAddOn(name: string) {
@@ -522,7 +522,7 @@ export default function ProductOrderForm({
         </Field>
         <Field label="Preferred Time Slot" error={errors.pickupSlot}>
           <div className="flex flex-col gap-2.5">
-            {PICKUP_SLOTS.map((slot) => (
+            {business.pickupSlots.map((slot) => (
               <label
                 key={slot.value}
                 className={`flex items-center gap-2.5 px-4 py-3 rounded-[10px] border cursor-pointer transition-colors ${

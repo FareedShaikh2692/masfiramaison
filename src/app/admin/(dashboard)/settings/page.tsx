@@ -6,11 +6,13 @@ import type { BusinessSettings, TermsItem } from "@/lib/settingsStore";
 
 export default function AdminSettingsPage() {
   const { showToast } = useToast();
-  const [tab, setTab] = useState<"business" | "terms">("business");
+  const [tab, setTab] = useState<"business" | "availability" | "terms">("business");
   const [business, setBusiness] = useState<BusinessSettings | null>(null);
   const [terms, setTerms] = useState<TermsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [newBlackoutDate, setNewBlackoutDate] = useState("");
+  const [newSlotLabel, setNewSlotLabel] = useState("");
 
   useEffect(() => {
     fetch("/api/admin/settings")
@@ -66,6 +68,9 @@ export default function AdminSettingsPage() {
       <div className="flex gap-2 mb-6">
         <button onClick={() => setTab("business")} className={`px-4 py-2 rounded-full text-[0.85rem] font-medium ${tab === "business" ? "text-white" : "text-ink border border-border"}`} style={tab === "business" ? { background: "var(--gold-dark)" } : undefined}>
           Business Info
+        </button>
+        <button onClick={() => setTab("availability")} className={`px-4 py-2 rounded-full text-[0.85rem] font-medium ${tab === "availability" ? "text-white" : "text-ink border border-border"}`} style={tab === "availability" ? { background: "var(--gold-dark)" } : undefined}>
+          Pickup &amp; Availability
         </button>
         <button onClick={() => setTab("terms")} className={`px-4 py-2 rounded-full text-[0.85rem] font-medium ${tab === "terms" ? "text-white" : "text-ink border border-border"}`} style={tab === "terms" ? { background: "var(--gold-dark)" } : undefined}>
           Terms &amp; Conditions
@@ -129,6 +134,117 @@ export default function AdminSettingsPage() {
           </div>
           <button onClick={saveBusiness} disabled={saving} className="btn btn-primary">
             {saving ? "Saving…" : "Save Business Info"}
+          </button>
+        </div>
+      ) : tab === "availability" ? (
+        <div className="card p-6 space-y-6">
+          <div>
+            <label className="field-label mb-2">Closed Weekdays</label>
+            <div className="flex flex-wrap gap-2">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, i) => {
+                const active = business.closedWeekdays.includes(i);
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() =>
+                      setBusiness({
+                        ...business,
+                        closedWeekdays: active ? business.closedWeekdays.filter((d) => d !== i) : [...business.closedWeekdays, i]
+                      })
+                    }
+                    className={`px-3.5 py-2 rounded-full text-[0.82rem] font-medium border transition-colors ${
+                      active ? "text-white" : "text-ink border-border bg-ivory"
+                    }`}
+                    style={active ? { background: "var(--danger)", borderColor: "var(--danger)" } : undefined}
+                  >
+                    {day}
+                  </button>
+                );
+              })}
+            </div>
+            <span className="field-hint">Customers won&apos;t be able to select these days for pickup or delivery.</span>
+          </div>
+
+          <div>
+            <label className="field-label mb-2">Blackout Dates</label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {business.blackoutDates.length === 0 && <span className="text-text-muted text-[0.85rem]">No blackout dates set.</span>}
+              {business.blackoutDates.map((d) => (
+                <span key={d} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[0.8rem]" style={{ background: "var(--blush-soft)" }}>
+                  {d}
+                  <button
+                    type="button"
+                    onClick={() => setBusiness({ ...business, blackoutDates: business.blackoutDates.filter((x) => x !== d) })}
+                    className="text-danger font-bold"
+                    aria-label={`Remove ${d}`}
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2.5">
+              <input className="field-input max-w-[200px]" type="date" value={newBlackoutDate} onChange={(e) => setNewBlackoutDate(e.target.value)} />
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => {
+                  if (!newBlackoutDate || business.blackoutDates.includes(newBlackoutDate)) return;
+                  setBusiness({ ...business, blackoutDates: [...business.blackoutDates, newBlackoutDate].sort() });
+                  setNewBlackoutDate("");
+                }}
+              >
+                + Add Date
+              </button>
+            </div>
+            <span className="field-hint">Specific dates (holidays, fully booked days) that are unavailable regardless of weekday.</span>
+          </div>
+
+          <div>
+            <label className="field-label mb-2">Pickup Time Slots</label>
+            <div className="space-y-2 mb-3">
+              {business.pickupSlots.map((slot, i) => (
+                <div key={i} className="flex items-center gap-2.5">
+                  <input
+                    className="field-input"
+                    value={slot.label}
+                    onChange={(e) => {
+                      const next = [...business.pickupSlots];
+                      next[i] = { ...slot, label: e.target.value };
+                      setBusiness({ ...business, pickupSlots: next });
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setBusiness({ ...business, pickupSlots: business.pickupSlots.filter((_, idx) => idx !== i) })}
+                    className="text-danger text-[0.8rem] flex-shrink-0"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2.5">
+              <input className="field-input" placeholder="e.g. Late Evening · 8 PM – 10 PM" value={newSlotLabel} onChange={(e) => setNewSlotLabel(e.target.value)} />
+              <button
+                type="button"
+                className="btn btn-outline btn-sm flex-shrink-0"
+                onClick={() => {
+                  if (!newSlotLabel.trim()) return;
+                  const value = newSlotLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+                  setBusiness({ ...business, pickupSlots: [...business.pickupSlots, { value: value || `slot-${Date.now()}`, label: newSlotLabel.trim() }] });
+                  setNewSlotLabel("");
+                }}
+              >
+                + Add Slot
+              </button>
+            </div>
+            <span className="field-hint">Shown to customers as time-slot choices when placing an order.</span>
+          </div>
+
+          <button onClick={saveBusiness} disabled={saving} className="btn btn-primary">
+            {saving ? "Saving…" : "Save Availability"}
           </button>
         </div>
       ) : (

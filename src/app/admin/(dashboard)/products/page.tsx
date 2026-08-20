@@ -5,6 +5,9 @@ import type { CategoryRecord, FlavorRecord, ProductRecord } from "@/lib/catalogS
 import ProductForm, { ProductFormValue, blankProductForm, productToForm } from "@/components/admin/ProductForm";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useToast } from "@/components/admin/Toast";
+import SortableTh from "@/components/admin/SortableTh";
+
+type SortKey = "name" | "price";
 
 export default function AdminProductsPage() {
   const { showToast } = useToast();
@@ -15,6 +18,18 @@ export default function AdminProductsPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
+  const [sortDir, setSortDir] = useState<1 | -1>(1);
+
+  function toggleSort(key: SortKey) {
+    if (key === sortKey) {
+      setSortDir((d) => (d === 1 ? -1 : 1));
+    } else {
+      setSortKey(key);
+      setSortDir(1);
+    }
+  }
+
 
   const [panelOpen, setPanelOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -116,13 +131,18 @@ export default function AdminProductsPage() {
     load();
   }
 
-  const filtered = products.filter((p) => {
-    if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
-    if (categoryFilter !== "all" && p.categoryId !== categoryFilter) return false;
-    if (statusFilter === "active" && !p.active) return false;
-    if (statusFilter === "inactive" && p.active) return false;
-    return true;
-  });
+  const filtered = products
+    .filter((p) => {
+      if (search && !p.name.toLowerCase().includes(search.toLowerCase())) return false;
+      if (categoryFilter !== "all" && p.categoryId !== categoryFilter) return false;
+      if (statusFilter === "active" && !p.active) return false;
+      if (statusFilter === "inactive" && p.active) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortKey === "price") return ((a.price ?? 0) - (b.price ?? 0)) * sortDir;
+      return a.name.localeCompare(b.name) * sortDir;
+    });
 
   return (
     <div>
@@ -171,59 +191,96 @@ export default function AdminProductsPage() {
           )}
         </div>
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="w-full text-[0.88rem]">
-            <thead>
-              <tr className="border-b border-border text-left text-text-muted text-[0.75rem] uppercase tracking-wide">
-                <th className="px-5 py-3 font-medium">Product</th>
-                <th className="px-5 py-3 font-medium">Category</th>
-                <th className="px-5 py-3 font-medium">Price</th>
-                <th className="px-5 py-3 font-medium">Status</th>
-                <th className="px-5 py-3 font-medium text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((p) => (
-                <tr key={p.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-3">
-                    <div className="flex items-center gap-3">
-                      {p.image && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.image} alt="" className="w-10 h-10 rounded-[8px] object-cover border border-border flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-ink">{p.name}</span>
-                      {p.featured && <span className="text-[0.65rem] uppercase px-2 py-0.5 rounded-full bg-blush-soft text-gold-dark">Featured</span>}
-                    </div>
-                  </td>
-                  <td className="px-5 py-3 text-text-muted">{categories.find((c) => c.id === p.categoryId)?.name || "—"}</td>
-                  <td className="px-5 py-3 text-ink">{p.price == null ? "On request" : `₹${p.price}`}</td>
-                  <td className="px-5 py-3">
-                    <button
-                      onClick={() => toggleActive(p)}
-                      className={`text-[0.75rem] px-2.5 py-1 rounded-full font-medium ${p.active ? "text-white" : "text-text-muted bg-blush-soft"}`}
-                      style={p.active ? { background: "var(--gold-dark)" } : undefined}
-                    >
-                      {p.active ? "Active" : "Inactive"}
+        <>
+          <div className="sm:hidden space-y-3">
+            {filtered.map((p) => (
+              <div key={p.id} className="card p-4">
+                <div className="flex items-center gap-3 mb-3">
+                  {p.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.image} alt="" className="w-12 h-12 rounded-[8px] object-cover border border-border flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-ink truncate">{p.name}</div>
+                    <div className="text-text-muted text-[0.8rem]">{categories.find((c) => c.id === p.categoryId)?.name || "—"}</div>
+                  </div>
+                  <span className="text-ink font-semibold flex-shrink-0">{p.price == null ? "On request" : `₹${p.price}`}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => toggleActive(p)}
+                    className={`text-[0.75rem] px-2.5 py-1 rounded-full font-medium ${p.active ? "text-white" : "text-text-muted bg-blush-soft"}`}
+                    style={p.active ? { background: "var(--gold-dark)" } : undefined}
+                  >
+                    {p.active ? "Active" : "Inactive"}
+                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => openEdit(p)} className="btn btn-outline btn-sm">
+                      Edit
                     </button>
-                  </td>
-                  <td className="px-5 py-3">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEdit(p)} className="btn btn-outline btn-sm">
-                        Edit
-                      </button>
-                      <button onClick={() => handleDuplicate(p)} className="btn btn-outline btn-sm">
-                        Duplicate
-                      </button>
-                      <button onClick={() => setDeleteTarget(p)} className="btn btn-sm text-white" style={{ background: "var(--danger)" }}>
-                        Delete
-                      </button>
-                    </div>
-                  </td>
+                    <button onClick={() => setDeleteTarget(p)} className="btn btn-sm text-white" style={{ background: "var(--danger)" }}>
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden sm:block card overflow-x-auto">
+            <table className="w-full text-[0.88rem]">
+              <thead>
+                <tr className="border-b border-border text-left text-text-muted text-[0.75rem] uppercase tracking-wide">
+                  <SortableTh label="Product" active={sortKey === "name"} dir={sortDir} onClick={() => toggleSort("name")} />
+                  <th className="px-5 py-3 font-medium">Category</th>
+                  <SortableTh label="Price" active={sortKey === "price"} dir={sortDir} onClick={() => toggleSort("price")} />
+                  <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filtered.map((p) => (
+                  <tr key={p.id} className="border-b border-border last:border-0">
+                    <td className="px-5 py-3">
+                      <div className="flex items-center gap-3">
+                        {p.image && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={p.image} alt="" className="w-10 h-10 rounded-[8px] object-cover border border-border flex-shrink-0" />
+                        )}
+                        <span className="font-medium text-ink">{p.name}</span>
+                        {p.featured && <span className="text-[0.65rem] uppercase px-2 py-0.5 rounded-full bg-blush-soft text-gold-dark">Featured</span>}
+                      </div>
+                    </td>
+                    <td className="px-5 py-3 text-text-muted">{categories.find((c) => c.id === p.categoryId)?.name || "—"}</td>
+                    <td className="px-5 py-3 text-ink">{p.price == null ? "On request" : `₹${p.price}`}</td>
+                    <td className="px-5 py-3">
+                      <button
+                        onClick={() => toggleActive(p)}
+                        className={`text-[0.75rem] px-2.5 py-1 rounded-full font-medium ${p.active ? "text-white" : "text-text-muted bg-blush-soft"}`}
+                        style={p.active ? { background: "var(--gold-dark)" } : undefined}
+                      >
+                        {p.active ? "Active" : "Inactive"}
+                      </button>
+                    </td>
+                    <td className="px-5 py-3">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => openEdit(p)} className="btn btn-outline btn-sm">
+                          Edit
+                        </button>
+                        <button onClick={() => handleDuplicate(p)} className="btn btn-outline btn-sm">
+                          Duplicate
+                        </button>
+                        <button onClick={() => setDeleteTarget(p)} className="btn btn-sm text-white" style={{ background: "var(--danger)" }}>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Slide-over form */}

@@ -109,12 +109,6 @@ export const OCCASIONS = [
 
 export const ADD_ONS = ["Name Topper", "Candles", "Photo Print"];
 
-export const PICKUP_SLOTS = [
-  { value: "morning", label: "Morning · 10 AM – 12 PM" },
-  { value: "afternoon", label: "Afternoon · 12 PM – 4 PM" },
-  { value: "evening", label: "Evening · 4 PM – 8 PM" }
-];
-
 export interface GalleryItem {
   id: number;
   category: string;
