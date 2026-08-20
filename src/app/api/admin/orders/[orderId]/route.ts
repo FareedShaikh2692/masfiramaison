@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readOrders, updateOrder } from "@/lib/orderStore";
 import { createNotification } from "@/lib/notificationStore";
+import { generateReviewToken } from "@/lib/reviewStore";
 import type { OrderStatus, PaymentStatus } from "@/lib/types";
 
 const VALID_STATUSES: OrderStatus[] = [
@@ -35,6 +36,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
     return NextResponse.json({ error: "Invalid payment status." }, { status: 400 });
   }
 
+  const orders = await readOrders();
+  const existing = orders.find((o) => o.orderId === orderId);
+  if (!existing) return NextResponse.json({ error: "Order not found." }, { status: 404 });
+
   const patch: Record<string, unknown> = {};
   if (body.status) patch.status = body.status;
   if (body.paymentStatus) patch.paymentStatus = body.paymentStatus;
@@ -44,6 +49,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
   if (typeof body.deliveryCharge === "number" || body.deliveryCharge === null) patch.deliveryCharge = body.deliveryCharge;
   if (typeof body.total === "number" || body.total === null) patch.total = body.total;
   if (typeof body.adminNote === "string") patch.adminNote = body.adminNote;
+
+  if (body.status === "completed" && !existing.reviewToken) {
+    patch.reviewToken = generateReviewToken();
+    patch.reviewRequestedAt = new Date().toISOString();
+  }
 
   const order = await updateOrder(orderId, patch);
   if (!order) return NextResponse.json({ error: "Order not found." }, { status: 404 });

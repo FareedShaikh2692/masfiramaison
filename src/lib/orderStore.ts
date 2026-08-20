@@ -49,6 +49,11 @@ export async function saveOrder(order: OrderRecord): Promise<void> {
   `;
 }
 
+export async function findOrderByReviewToken(token: string): Promise<OrderRecord | null> {
+  const orders = await readOrders();
+  return orders.find((o) => o.reviewToken === token) || null;
+}
+
 export async function updateOrder(
   orderId: string,
   patch: Partial<OrderRecord>

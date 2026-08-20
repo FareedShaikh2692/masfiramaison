@@ -194,4 +194,6 @@ export interface OrderRecord {
   couponCode?: string | null;
   discountAmount?: number | null;
   adminNote?: string;
+  reviewToken?: string;
+  reviewRequestedAt?: string;
 }

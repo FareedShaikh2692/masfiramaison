@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import type { OrderRecord, OrderStatus } from "@/lib/types";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
-import { formatDate } from "@/lib/format";
+import { formatDate, waLink } from "@/lib/format";
 import { useToast } from "@/components/admin/Toast";
 
 const STATUS_FLOW: OrderStatus[] = [
@@ -28,6 +28,11 @@ export default function AdminOrderDetailPage() {
   const [itemPriceInput, setItemPriceInput] = useState("");
   const [designChargeInput, setDesignChargeInput] = useState("");
   const [deliveryChargeInput, setDeliveryChargeInput] = useState("");
+  const [origin, setOrigin] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.resolve().then(() => setOrigin(window.location.origin));
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -168,6 +173,19 @@ export default function AdminOrderDetailPage() {
             Cancel Order
           </button>
         </div>
+        {order.status === "completed" && order.reviewToken && origin && (
+          <a
+            href={waLink(
+              `Thank you for choosing Masfira Maison! 💕 We hope you loved your order. We'd love to hear about your experience: ${origin}/review/order/${order.reviewToken}`,
+              { phone: order.phone, countryCode: "91" }
+            )}
+            target="_blank"
+            rel="noopener"
+            className="btn btn-whatsapp btn-sm mt-3 inline-flex"
+          >
+            Send Review Request
+          </a>
+        )}
       </div>
 
       <div className="grid md:grid-cols-2 gap-5">

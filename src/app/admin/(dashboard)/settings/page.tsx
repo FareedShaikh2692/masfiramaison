@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/admin/Toast";
-import type { BusinessSettings, TermsItem } from "@/lib/settingsStore";
+import type { BusinessSettings, TermsItem, ReviewSettings } from "@/lib/settingsStore";
 
 export default function AdminSettingsPage() {
   const { showToast } = useToast();
-  const [tab, setTab] = useState<"business" | "availability" | "terms">("business");
+  const [tab, setTab] = useState<"business" | "availability" | "reviews" | "terms">("business");
   const [business, setBusiness] = useState<BusinessSettings | null>(null);
   const [terms, setTerms] = useState<TermsItem[]>([]);
+  const [reviewSettings, setReviewSettings] = useState<ReviewSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newBlackoutDate, setNewBlackoutDate] = useState("");
@@ -20,9 +21,28 @@ export default function AdminSettingsPage() {
       .then((data) => {
         setBusiness(data.business);
         setTerms(data.terms);
+        setReviewSettings(data.reviewSettings);
         setLoading(false);
       });
   }, []);
+
+  async function saveReviewSettings() {
+    if (!reviewSettings) return;
+    setSaving(true);
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewSettings })
+      });
+      if (!res.ok) throw new Error("Could not save.");
+      showToast("Review settings saved.");
+    } catch {
+      showToast("Something went wrong.", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function saveBusiness() {
     if (!business) return;
@@ -71,6 +91,9 @@ export default function AdminSettingsPage() {
         </button>
         <button onClick={() => setTab("availability")} className={`px-4 py-2 rounded-full text-[0.85rem] font-medium ${tab === "availability" ? "text-white" : "text-ink border border-border"}`} style={tab === "availability" ? { background: "var(--gold-dark)" } : undefined}>
           Pickup &amp; Availability
+        </button>
+        <button onClick={() => setTab("reviews")} className={`px-4 py-2 rounded-full text-[0.85rem] font-medium ${tab === "reviews" ? "text-white" : "text-ink border border-border"}`} style={tab === "reviews" ? { background: "var(--gold-dark)" } : undefined}>
+          Reviews
         </button>
         <button onClick={() => setTab("terms")} className={`px-4 py-2 rounded-full text-[0.85rem] font-medium ${tab === "terms" ? "text-white" : "text-ink border border-border"}`} style={tab === "terms" ? { background: "var(--gold-dark)" } : undefined}>
           Terms &amp; Conditions
@@ -245,6 +268,58 @@ export default function AdminSettingsPage() {
 
           <button onClick={saveBusiness} disabled={saving} className="btn btn-primary">
             {saving ? "Saving…" : "Save Availability"}
+          </button>
+        </div>
+      ) : tab === "reviews" && reviewSettings ? (
+        <div className="card p-6 space-y-4">
+          {(
+            [
+              ["enabled", "Enable customer reviews"],
+              ["requireApproval", "Require admin approval before publishing"],
+              ["allowPhotos", "Allow customers to upload photos"],
+              ["enableAI", "Enable the AI Reply Assistant"],
+              ["enableAutoRequest", "Automatically request a review when an order is marked completed"],
+              ["showOnHomepage", "Show reviews section on the homepage"],
+              ["showPhotosPublicly", "Show customer photos publicly"],
+              ["enableVerifiedBadge", "Show the Verified Purchase badge"]
+            ] as [keyof ReviewSettings, string][]
+          ).map(([key, label]) => (
+            <label key={key} className="flex items-center gap-3 py-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                className="w-[18px] h-[18px] accent-[var(--gold-dark)]"
+                checked={Boolean(reviewSettings[key])}
+                onChange={(e) => setReviewSettings({ ...reviewSettings, [key]: e.target.checked })}
+              />
+              <span className="text-[0.9rem] text-ink">{label}</span>
+            </label>
+          ))}
+          <div className="grid grid-cols-2 gap-4 pt-2">
+            <div>
+              <label className="field-label">Max Photos Per Review</label>
+              <input
+                className="field-input"
+                type="number"
+                min={1}
+                max={5}
+                value={reviewSettings.maxPhotos}
+                onChange={(e) => setReviewSettings({ ...reviewSettings, maxPhotos: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <label className="field-label">Minimum Rating Allowed</label>
+              <input
+                className="field-input"
+                type="number"
+                min={1}
+                max={5}
+                value={reviewSettings.minRating}
+                onChange={(e) => setReviewSettings({ ...reviewSettings, minRating: Number(e.target.value) })}
+              />
+            </div>
+          </div>
+          <button onClick={saveReviewSettings} disabled={saving} className="btn btn-primary">
+            {saving ? "Saving…" : "Save Review Settings"}
           </button>
         </div>
       ) : (

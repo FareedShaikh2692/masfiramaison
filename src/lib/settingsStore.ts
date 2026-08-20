@@ -24,6 +24,32 @@ export interface TermsItem {
   text: string;
 }
 
+export interface ReviewSettings {
+  enabled: boolean;
+  requireApproval: boolean;
+  allowPhotos: boolean;
+  maxPhotos: number;
+  minRating: number;
+  enableAI: boolean;
+  enableAutoRequest: boolean;
+  showOnHomepage: boolean;
+  showPhotosPublicly: boolean;
+  enableVerifiedBadge: boolean;
+}
+
+const DEFAULT_REVIEW_SETTINGS: ReviewSettings = {
+  enabled: true,
+  requireApproval: true,
+  allowPhotos: true,
+  maxPhotos: 5,
+  minRating: 1,
+  enableAI: true,
+  enableAutoRequest: true,
+  showOnHomepage: true,
+  showPhotosPublicly: true,
+  enableVerifiedBadge: true
+};
+
 let tableReady: Promise<void> | null = null;
 function ensureTable(): Promise<void> {
   if (!tableReady) {
@@ -70,5 +96,22 @@ export async function saveTerms(terms: TermsItem[]): Promise<void> {
   await sql`
     INSERT INTO site_settings (key, data, updated_at) VALUES ('terms', ${JSON.stringify(terms)}::jsonb, now())
     ON CONFLICT (key) DO UPDATE SET data = ${JSON.stringify(terms)}::jsonb, updated_at = now()
+  `;
+}
+
+export async function getReviewSettings(): Promise<ReviewSettings> {
+  await ensureTable();
+  const sql = getSql();
+  const rows = await sql`SELECT data FROM site_settings WHERE key = 'reviews'`;
+  if (!rows.length) return DEFAULT_REVIEW_SETTINGS;
+  return { ...DEFAULT_REVIEW_SETTINGS, ...(rows[0].data as Partial<ReviewSettings>) };
+}
+
+export async function saveReviewSettings(settings: ReviewSettings): Promise<void> {
+  await ensureTable();
+  const sql = getSql();
+  await sql`
+    INSERT INTO site_settings (key, data, updated_at) VALUES ('reviews', ${JSON.stringify(settings)}::jsonb, now())
+    ON CONFLICT (key) DO UPDATE SET data = ${JSON.stringify(settings)}::jsonb, updated_at = now()
   `;
 }

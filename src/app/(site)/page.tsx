@@ -9,6 +9,7 @@ import About from "@/components/About";
 import DeliveryPayment from "@/components/DeliveryPayment";
 import Gallery from "@/components/Gallery";
 import Testimonials from "@/components/Testimonials";
+import CustomerGallery from "@/components/review/CustomerGallery";
 import InstagramStrip from "@/components/InstagramStrip";
 import Contact from "@/components/Contact";
 import { getHeroBanner } from "@/lib/contentStore";
@@ -28,6 +29,7 @@ export default async function Home() {
       <DeliveryPayment />
       <Gallery />
       <Testimonials />
+      <CustomerGallery />
       <InstagramStrip />
       <Contact />
     </>
