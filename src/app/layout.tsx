@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://masfiramaison.vercel.app")
+};
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",

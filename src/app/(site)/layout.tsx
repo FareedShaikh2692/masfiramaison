@@ -9,10 +9,13 @@ import Footer from "@/components/Footer";
 import WhatsappFloat from "@/components/WhatsappFloat";
 import OrderPanel from "@/components/order/OrderPanel";
 
+const TITLE = "Masfira Maison | Homemade Cakes, Bento Cakes & Custom Celebration Cakes";
+const DESCRIPTION =
+  "Masfira Maison bakes premium homemade cakes, bento cakes, cupcakes and custom celebration cakes to order. Advance payment via Google Pay, UPI or Paytm — no COD. Order on WhatsApp.";
+
 export const metadata: Metadata = {
-  title: "Masfira Maison | Homemade Cakes, Bento Cakes & Custom Celebration Cakes",
-  description:
-    "Masfira Maison bakes premium homemade cakes, bento cakes, cupcakes and custom celebration cakes to order. Advance payment via Google Pay, UPI or Paytm — no COD. Order on WhatsApp.",
+  title: TITLE,
+  description: DESCRIPTION,
   keywords: [
     "homemade cakes",
     "custom cakes",
@@ -22,13 +25,25 @@ export const metadata: Metadata = {
     "homemade bakery",
     "custom celebration cakes",
     "tres leches cake",
-    "cupcakes"
+    "cupcakes",
+    "cake delivery Pune",
+    "Kondhwa bakery"
   ],
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
   openGraph: {
     type: "website",
+    url: "/",
     siteName: BUSINESS.name,
     title: "Masfira Maison | Homemade at heart. Premium by design.",
-    description: "Handcrafted homemade cakes, bento cakes, cupcakes and custom celebration cakes — freshly baked to order."
+    description: "Handcrafted homemade cakes, bento cakes, cupcakes and custom celebration cakes — freshly baked to order.",
+    images: [{ url: "/images/logo.jpg", width: 1254, height: 1254, alt: BUSINESS.name }]
+  },
+  twitter: {
+    card: "summary",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/images/logo.jpg"]
   }
 };
 
