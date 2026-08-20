@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { BusinessSettings } from "@/lib/settingsStore";
 
@@ -5,7 +6,10 @@ export default function Footer({ business }: { business: BusinessSettings }) {
   return (
     <footer className="print:hidden text-white/60 text-[0.88rem]" style={{ background: "#34291F" }}>
       <div className="container-app flex flex-wrap items-center justify-between gap-5 py-12">
-        <span className="font-serif text-lg text-white">{business.name}</span>
+        <span className="flex items-center gap-3">
+          <Image src="/images/logo.jpg" alt="" width={36} height={36} className="rounded-full" />
+          <span className="font-serif text-lg text-white">{business.name}</span>
+        </span>
         <nav className="flex flex-wrap gap-5" aria-label="Footer">
           <Link href="/#home" className="hover:text-gold-light">Home</Link>
           <Link href="/#menu" className="hover:text-gold-light">Our Menu</Link>

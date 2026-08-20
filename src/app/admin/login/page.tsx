@@ -38,7 +38,7 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center px-6" style={{ background: "var(--cream)" }}>
       <div className="w-full max-w-[400px]">
         <div className="text-center mb-8">
-          <Image src="/images/monogram.svg" alt="" width={52} height={52} className="mx-auto mb-4" />
+          <Image src="/images/logo.jpg" alt="" width={64} height={64} className="mx-auto mb-4 rounded-full" />
           <h1 className="text-[1.7rem] mb-1">{BUSINESS.name}</h1>
           <p className="text-text-muted text-[0.9rem]">Admin Dashboard</p>
         </div>

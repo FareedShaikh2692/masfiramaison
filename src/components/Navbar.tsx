@@ -43,7 +43,7 @@ export default function Navbar() {
       >
         <div className="container-app flex items-center justify-between gap-5">
           <Link href="/#home" className="flex items-center gap-3">
-            <Image src="/images/monogram.svg" alt="" width={42} height={42} priority />
+            <Image src="/images/logo.jpg" alt="" width={46} height={46} className="rounded-full" priority />
             <span className="font-serif text-2xl font-bold text-ink">{business.name}</span>
           </Link>
 

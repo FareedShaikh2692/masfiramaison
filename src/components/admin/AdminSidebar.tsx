@@ -108,7 +108,7 @@ export default function AdminSidebar({
   return (
     <div className="h-full flex flex-col" style={{ background: "var(--ivory)" }}>
       <Link href="/admin" className={`flex items-center gap-3 py-6 border-b border-border ${collapsed ? "justify-center px-3" : "px-6"}`} onClick={onNavigate}>
-        <Image src="/images/monogram.svg" alt="" width={32} height={32} className="flex-shrink-0" />
+        <Image src="/images/logo.jpg" alt="" width={32} height={32} className="flex-shrink-0 rounded-full" />
         {!collapsed && (
           <div>
             <div className="font-serif text-[1.02rem] leading-tight text-ink">Masfira Maison</div>
