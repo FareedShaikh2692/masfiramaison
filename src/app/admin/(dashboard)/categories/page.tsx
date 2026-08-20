@@ -4,6 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import type { CategoryRecord } from "@/lib/catalogStore";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useToast } from "@/components/admin/Toast";
+import MediaPickerModal from "@/components/admin/MediaPickerModal";
+import PageHeader from "@/components/admin/PageHeader";
+import EmptyState from "@/components/admin/EmptyState";
+import { TableSkeleton } from "@/components/admin/Skeleton";
+import { Layers } from "lucide-react";
 
 interface FormState {
   name: string;
@@ -22,6 +27,19 @@ export default function AdminCategoriesPage() {
   const [form, setForm] = useState<FormState>(blank);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<CategoryRecord | null>(null);
+  const [imageUploading, setImageUploading] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  function handleImageFile(file: File | undefined) {
+    if (!file || !file.type.startsWith("image/")) return;
+    setImageUploading(true);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setForm((prev) => ({ ...prev, image: e.target?.result as string }));
+      setImageUploading(false);
+    };
+    reader.readAsDataURL(file);
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -104,26 +122,29 @@ export default function AdminCategoriesPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h1 className="text-[1.6rem]">Categories</h1>
-        <button onClick={openCreate} className="btn btn-primary btn-sm">
-          + Add Category
-        </button>
-      </div>
+      <PageHeader
+        title="Categories"
+        description="Group your menu into sections like Basic Cakes, Bento Cakes, or Cupcakes."
+        actions={
+          <button onClick={openCreate} className="btn btn-primary btn-sm">
+            + Add Category
+          </button>
+        }
+      />
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card h-16 animate-pulse" />
-          ))}
-        </div>
+        <TableSkeleton rows={4} />
       ) : sorted.length === 0 ? (
-        <div className="card p-12 text-center">
-          <p className="text-text-muted mb-4">No categories yet.</p>
-          <button onClick={openCreate} className="btn btn-primary btn-sm">
-            Add Your First Category
-          </button>
-        </div>
+        <EmptyState
+          icon={Layers}
+          title="No Categories Yet"
+          description="Add a category to start organizing your menu."
+          action={
+            <button onClick={openCreate} className="btn btn-primary btn-sm">
+              Add Your First Category
+            </button>
+          }
+        />
       ) : (
         <div className="card divide-y divide-border">
           {sorted.map((c, i) => (
@@ -184,10 +205,30 @@ export default function AdminCategoriesPage() {
               <textarea className="field-input min-h-[70px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             </div>
             <div>
-              <label className="field-label">Image URL</label>
-              <input className="field-input" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
+              <label className="field-label">Category Image</label>
+              {form.image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={form.image} alt="" className="w-24 h-24 object-cover rounded-[10px] border border-border mb-2.5" />
+              )}
+              <div className="flex gap-2 mb-2">
+                <label className="flex-1 border-2 border-dashed border-border rounded-[14px] p-4 text-center cursor-pointer hover:border-gold hover:bg-blush-soft transition-colors">
+                  <span className="text-[0.85rem] text-text-muted">{imageUploading ? "Uploading…" : "Click or drag an image here"}</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFile(e.target.files?.[0])} />
+                </label>
+                <button type="button" onClick={() => setPickerOpen(true)} className="btn btn-outline btn-sm whitespace-nowrap">
+                  Choose From Library
+                </button>
+              </div>
+              <input
+                className="field-input"
+                placeholder="…or paste an image URL / external reference"
+                value={form.image.startsWith("data:") ? "" : form.image}
+                onChange={(e) => setForm({ ...form, image: e.target.value })}
+              />
             </div>
           </div>
+
+          <MediaPickerModal open={pickerOpen} onClose={() => setPickerOpen(false)} onSelect={(dataUrl) => setForm((prev) => ({ ...prev, image: dataUrl }))} />
           <div className="px-6 py-4 border-t border-border flex gap-3" style={{ background: "var(--ivory)" }}>
             <button onClick={() => setPanelOpen(false)} className="btn btn-outline flex-1">
               Cancel

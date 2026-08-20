@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useToast } from "@/components/admin/Toast";
+import PageHeader from "@/components/admin/PageHeader";
+import { TableSkeleton } from "@/components/admin/Skeleton";
 
 interface SizeRecord {
   id: string;
@@ -71,10 +73,10 @@ export default function AdminSizesPage() {
 
   return (
     <div>
-      <h1 className="text-[1.6rem] mb-2">Sizes</h1>
-      <p className="text-text-muted text-[0.88rem] mb-6">
-        A shared list of size labels (e.g. Bento, 500g, 1 kg) you can pick from while setting up a product&apos;s weight pricing — pricing itself stays per-product.
-      </p>
+      <PageHeader
+        title="Cake Sizes"
+        description="A shared list of size labels (e.g. Bento, 500g, 1 kg) you can pick from while setting up a product's weight pricing — pricing itself stays per-product."
+      />
 
       <form onSubmit={handleAdd} className="flex gap-3 mb-6 max-w-[420px]">
         <input className="field-input" placeholder="New size label, e.g. 2.5 kg" value={newLabel} onChange={(e) => setNewLabel(e.target.value)} />
@@ -84,11 +86,7 @@ export default function AdminSizesPage() {
       </form>
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card h-12 animate-pulse" />
-          ))}
-        </div>
+        <TableSkeleton rows={4} />
       ) : sizes.length === 0 ? (
         <div className="card p-10 text-center text-text-muted">No sizes yet — add your first one above.</div>
       ) : (

@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import type { FlavorRecord } from "@/lib/catalogStore";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useToast } from "@/components/admin/Toast";
+import PageHeader from "@/components/admin/PageHeader";
+import { TableSkeleton } from "@/components/admin/Skeleton";
 
 export default function AdminFlavorsPage() {
   const { showToast } = useToast();
@@ -79,7 +81,7 @@ export default function AdminFlavorsPage() {
 
   return (
     <div>
-      <h1 className="text-[1.6rem] mb-6">Flavors</h1>
+      <PageHeader title="Flavors" description="A shared list of flavors customers can choose from when ordering." />
 
       <form onSubmit={handleAdd} className="flex gap-3 mb-6 max-w-[420px]">
         <input className="field-input" placeholder="New flavor name" value={newName} onChange={(e) => setNewName(e.target.value)} />
@@ -89,11 +91,7 @@ export default function AdminFlavorsPage() {
       </form>
 
       {loading ? (
-        <div className="space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card h-12 animate-pulse" />
-          ))}
-        </div>
+        <TableSkeleton rows={4} />
       ) : flavors.length === 0 ? (
         <div className="card p-10 text-center text-text-muted">No flavors yet — add your first one above.</div>
       ) : (
