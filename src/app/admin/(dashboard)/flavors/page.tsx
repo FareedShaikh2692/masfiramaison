@@ -31,7 +31,10 @@ export default function AdminFlavorsPage() {
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!newName.trim()) return;
+    if (!newName.trim()) {
+      showToast("Type a flavor name first.", "error");
+      return;
+    }
     setAdding(true);
     try {
       const res = await fetch("/api/admin/flavors", {

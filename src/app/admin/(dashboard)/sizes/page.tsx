@@ -34,7 +34,10 @@ export default function AdminSizesPage() {
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    if (!newLabel.trim()) return;
+    if (!newLabel.trim()) {
+      showToast("Type a size label first.", "error");
+      return;
+    }
     setAdding(true);
     try {
       const res = await fetch("/api/admin/sizes", {
@@ -43,12 +46,12 @@ export default function AdminSizesPage() {
         body: JSON.stringify({ label: newLabel, displayOrder: sizes.length })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || "Could not add size.");
       setNewLabel("");
       showToast("Size added.");
       load();
-    } catch {
-      showToast("Something went wrong.", "error");
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Something went wrong.", "error");
     } finally {
       setAdding(false);
     }
