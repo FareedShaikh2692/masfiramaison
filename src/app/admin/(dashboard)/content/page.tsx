@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/admin/Toast";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface HeroBanner {
   image: string;
@@ -64,7 +65,7 @@ export default function AdminContentPage() {
 
   return (
     <div className="max-w-[640px]">
-      <h1 className="text-[1.6rem] mb-6">Website Content</h1>
+      <PageHeader title="Website Content" description="Edit the homepage banner and special offers shown to customers." />
 
       <div className="card p-6 mb-6 space-y-5">
         <h2 className="text-[1.1rem]">Homepage Banner</h2>

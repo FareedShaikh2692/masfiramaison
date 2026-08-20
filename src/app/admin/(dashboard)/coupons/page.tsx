@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { BUSINESS } from "@/data/data";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useToast } from "@/components/admin/Toast";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface CouponRecord {
   id: string;
@@ -127,12 +128,15 @@ export default function AdminCouponsPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h1 className="text-[1.6rem]">Coupons &amp; Offers</h1>
-        <button onClick={openCreate} className="btn btn-primary btn-sm">
-          + Add Coupon
-        </button>
-      </div>
+      <PageHeader
+        title="Coupons & Offers"
+        description="Create discount codes customers can apply at checkout."
+        actions={
+          <button onClick={openCreate} className="btn btn-primary btn-sm">
+            + Add Coupon
+          </button>
+        }
+      />
 
       {loading ? (
         <div className="space-y-3">

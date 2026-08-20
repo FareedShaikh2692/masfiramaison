@@ -5,6 +5,7 @@ import { CAKE_TYPES_FOR_CUSTOM, WEIGHTS, DESIGN_OPTIONS } from "@/data/data";
 import { minOrderDate, isDateAvailable } from "@/lib/format";
 import TermsCheckbox from "@/components/order/TermsCheckbox";
 import { useBusiness } from "@/components/BusinessContext";
+import CustomSelect from "@/components/CustomSelect";
 
 export interface CustomOrderSnapshot {
   orderId: string;
@@ -148,38 +149,41 @@ export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s:
 
       <FormSection title="Cake Information">
         <Field label="Cake Type" error={errors.cakeType}>
-          <select className="field-input" value={cakeType} onChange={(e) => setCakeType(e.target.value)}>
-            <option value="" disabled>Choose a cake type</option>
-            {CAKE_TYPES_FOR_CUSTOM.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
+          <CustomSelect
+            value={cakeType}
+            onChange={setCakeType}
+            placeholder="Choose a cake type"
+            error={errors.cakeType}
+            options={CAKE_TYPES_FOR_CUSTOM.map((t) => ({ value: t, label: t }))}
+          />
         </Field>
         <Field label="Flavor" error={errors.flavor}>
-          <select className="field-input" value={flavor} onChange={(e) => setFlavor(e.target.value)}>
-            <option value="" disabled>Choose a flavor</option>
-            {flavorsList.map((f) => (
-              <option key={f} value={f}>{f}</option>
-            ))}
-            <option value="Custom">Custom / Discuss with us</option>
-          </select>
+          <CustomSelect
+            value={flavor}
+            onChange={setFlavor}
+            placeholder="Choose a flavor"
+            error={errors.flavor}
+            options={[...flavorsList.map((f) => ({ value: f, label: f })), { value: "Custom", label: "Custom / Discuss with us" }]}
+          />
         </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Weight" error={errors.weight}>
-            <select className="field-input" value={weight} onChange={(e) => setWeight(e.target.value)}>
-              <option value="" disabled>Choose a weight</option>
-              {WEIGHTS.map((w) => (
-                <option key={w.value} value={w.label}>{w.label}</option>
-              ))}
-            </select>
+            <CustomSelect
+              value={weight}
+              onChange={setWeight}
+              placeholder="Choose a weight"
+              error={errors.weight}
+              options={WEIGHTS.map((w) => ({ value: w.label, label: w.label }))}
+            />
           </Field>
           <Field label="Preferred Design" error={errors.design}>
-            <select className="field-input" value={design} onChange={(e) => setDesign(e.target.value)}>
-              <option value="" disabled>Choose a design</option>
-              {DESIGN_OPTIONS.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
+            <CustomSelect
+              value={design}
+              onChange={setDesign}
+              placeholder="Choose a design"
+              error={errors.design}
+              options={DESIGN_OPTIONS.map((d) => ({ value: d, label: d }))}
+            />
           </Field>
         </div>
         <div className="grid grid-cols-2 gap-4">

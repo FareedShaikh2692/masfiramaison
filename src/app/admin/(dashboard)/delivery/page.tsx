@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { BUSINESS } from "@/data/data";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useToast } from "@/components/admin/Toast";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface ZoneRecord {
   id: string;
@@ -125,12 +126,15 @@ export default function AdminDeliveryPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h1 className="text-[1.6rem]">Delivery Zones</h1>
-        <button onClick={openCreate} className="btn btn-primary btn-sm">
-          + Add Zone
-        </button>
-      </div>
+      <PageHeader
+        title="Delivery Zones"
+        description="Set delivery charges by area — customers see these when checking out."
+        actions={
+          <button onClick={openCreate} className="btn btn-primary btn-sm">
+            + Add Zone
+          </button>
+        }
+      />
 
       {loading ? (
         <div className="space-y-3">

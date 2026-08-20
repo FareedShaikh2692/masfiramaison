@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/admin/Toast";
 import type { BusinessSettings, TermsItem, ReviewSettings } from "@/lib/settingsStore";
+import PageHeader from "@/components/admin/PageHeader";
 
 export default function AdminSettingsPage() {
   const { showToast } = useToast();
@@ -83,7 +84,7 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="max-w-[640px]">
-      <h1 className="text-[1.6rem] mb-6">Settings</h1>
+      <PageHeader title="Settings" description="Business info, pickup availability, reviews, and terms & conditions." />
 
       <div className="flex gap-2 mb-6">
         <button onClick={() => setTab("business")} className={`px-4 py-2 rounded-full text-[0.85rem] font-medium ${tab === "business" ? "text-white" : "text-ink border border-border"}`} style={tab === "business" ? { background: "var(--gold-dark)" } : undefined}>

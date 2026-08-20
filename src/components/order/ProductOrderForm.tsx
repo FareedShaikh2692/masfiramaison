@@ -10,6 +10,7 @@ import TermsCheckbox from "@/components/order/TermsCheckbox";
 import type { OrderPrefill } from "@/components/order/OrderContext";
 import { useBusiness } from "@/components/BusinessContext";
 import type { DeliveryZoneRecord } from "@/lib/deliveryStore";
+import CustomSelect from "@/components/CustomSelect";
 
 const EMPTY_PRODUCT: Product = { id: "", name: "", category: "", description: "", image: "", price: null, fields: [] };
 
@@ -331,78 +332,76 @@ export default function ProductOrderForm({
 
       <FormSection title="Occasion">
         <Field label="What are you celebrating?" error={errors.occasion}>
-          <select className="field-input" value={occasion} onChange={(e) => setOccasion(e.target.value)}>
-            <option value="" disabled>Choose an occasion</option>
-            {OCCASIONS.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
+          <CustomSelect
+            value={occasion}
+            onChange={setOccasion}
+            placeholder="Choose an occasion"
+            error={errors.occasion}
+            options={OCCASIONS.map((o) => ({ value: o, label: o }))}
+          />
         </Field>
       </FormSection>
 
       <FormSection title="Choose Your Product">
         <Field label="Product">
-          <select className="field-input" value={productId} onChange={(e) => setProductId(e.target.value)}>
-            {categories.map((cat) => {
-              const items = products.filter((p) => p.category === cat.id);
-              if (!items.length) return null;
-              return (
-                <optgroup key={cat.id} label={cat.name}>
-                  {items.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name}
-                    </option>
-                  ))}
-                </optgroup>
-              );
-            })}
-          </select>
+          <CustomSelect
+            value={productId}
+            onChange={setProductId}
+            groups={categories
+              .map((cat) => ({
+                label: cat.name,
+                options: products.filter((p) => p.category === cat.id).map((p) => ({ value: p.id, label: p.name }))
+              }))
+              .filter((g) => g.options.length > 0)}
+          />
         </Field>
       </FormSection>
 
       <FormSection title="Customize">
         {product.fields.includes("flavor") && product.flavors && (
           <Field label="Flavor" error={errors.flavor}>
-            <select className="field-input" value={flavor} onChange={(e) => setFlavor(e.target.value)}>
-              <option value="" disabled>Choose a flavor</option>
-              {product.flavors.map((f) => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
+            <CustomSelect
+              value={flavor}
+              onChange={setFlavor}
+              placeholder="Choose a flavor"
+              error={errors.flavor}
+              options={product.flavors.map((f) => ({ value: f, label: f }))}
+            />
           </Field>
         )}
 
         {product.fields.includes("comboFlavor") && (
           <Field label="Bento Cake Flavor" error={errors.comboFlavor}>
-            <select className="field-input" value={comboFlavor} onChange={(e) => setComboFlavor(e.target.value)}>
-              <option value="" disabled>Choose a flavor</option>
-              {flavorsList.map((f) => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
+            <CustomSelect
+              value={comboFlavor}
+              onChange={setComboFlavor}
+              placeholder="Choose a flavor"
+              error={errors.comboFlavor}
+              options={flavorsList.map((f) => ({ value: f, label: f }))}
+            />
           </Field>
         )}
         {product.fields.includes("comboCupcakeFlavor") && (
           <Field label="Cupcake Flavor" error={errors.comboCupcakeFlavor}>
-            <select className="field-input" value={comboCupcakeFlavor} onChange={(e) => setComboCupcakeFlavor(e.target.value)}>
-              <option value="" disabled>Choose a flavor</option>
-              {flavorsList.map((f) => (
-                <option key={f} value={f}>{f}</option>
-              ))}
-            </select>
+            <CustomSelect
+              value={comboCupcakeFlavor}
+              onChange={setComboCupcakeFlavor}
+              placeholder="Choose a flavor"
+              error={errors.comboCupcakeFlavor}
+              options={flavorsList.map((f) => ({ value: f, label: f }))}
+            />
           </Field>
         )}
 
         {product.fields.includes("weight") && (
           <Field label="Cake Weight" error={errors.weight}>
-            <select className="field-input" value={weight} onChange={(e) => setWeight(e.target.value)}>
-              <option value="" disabled>Choose a weight</option>
-              {weightOptions.map((w) => (
-                <option key={w.value} value={w.value}>
-                  {w.label}{w.priceAdd != null ? ` — ₹${w.priceAdd}` : ""}
-                </option>
-              ))}
-            </select>
+            <CustomSelect
+              value={weight}
+              onChange={setWeight}
+              placeholder="Choose a weight"
+              error={errors.weight}
+              options={weightOptions.map((w) => ({ value: w.value, label: `${w.label}${w.priceAdd != null ? ` — ₹${w.priceAdd}` : ""}` }))}
+            />
             {weight === "custom" && (
               <input className="field-input mt-2.5" value={customWeight} onChange={(e) => setCustomWeight(e.target.value)} placeholder="e.g. 4 kg" />
             )}
@@ -411,25 +410,25 @@ export default function ProductOrderForm({
 
         {product.fields.includes("packSize") && (
           <Field label="Pack Size" error={errors.packSize}>
-            <select className="field-input" value={packSize} onChange={(e) => setPackSize(e.target.value)}>
-              <option value="" disabled>Choose a pack size</option>
-              {packOptions.map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}{p.priceAdd != null ? ` — ₹${p.priceAdd}` : ""}
-                </option>
-              ))}
-            </select>
+            <CustomSelect
+              value={packSize}
+              onChange={setPackSize}
+              placeholder="Choose a pack size"
+              error={errors.packSize}
+              options={packOptions.map((p) => ({ value: p.value, label: `${p.label}${p.priceAdd != null ? ` — ₹${p.priceAdd}` : ""}` }))}
+            />
           </Field>
         )}
 
         {product.fields.includes("design") && (
           <Field label="Cake Design" error={errors.design}>
-            <select className="field-input" value={design} onChange={(e) => setDesign(e.target.value)}>
-              <option value="" disabled>Choose a design</option>
-              {DESIGN_OPTIONS.map((d) => (
-                <option key={d} value={d}>{d}</option>
-              ))}
-            </select>
+            <CustomSelect
+              value={design}
+              onChange={setDesign}
+              placeholder="Choose a design"
+              error={errors.design}
+              options={DESIGN_OPTIONS.map((d) => ({ value: d, label: d }))}
+            />
           </Field>
         )}
 
@@ -488,13 +487,11 @@ export default function ProductOrderForm({
         {fulfillment === "delivery" ? (
           <>
             <Field label="Delivery Area">
-              <select className="field-input" value={deliveryAreaId} onChange={(e) => setDeliveryAreaId(e.target.value)}>
-                {zones.map((z) => (
-                  <option key={z.id} value={z.id}>
-                    {z.name} {zoneChargeLabel(z)}
-                  </option>
-                ))}
-              </select>
+              <CustomSelect
+                value={deliveryAreaId}
+                onChange={setDeliveryAreaId}
+                options={zones.map((z) => ({ value: z.id, label: `${z.name} ${zoneChargeLabel(z)}` }))}
+              />
             </Field>
             <Field label="Address" error={errors.address}>
               <input className="field-input" value={address} onChange={(e) => setAddress(e.target.value)} />

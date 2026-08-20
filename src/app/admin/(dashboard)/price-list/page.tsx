@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useToast } from "@/components/admin/Toast";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface CategoryRecord {
   id: string;
@@ -109,15 +110,15 @@ export default function PriceListBuilderPage() {
 
   return (
     <div className="max-w-[820px]">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div>
-          <h1 className="text-[1.6rem] mb-1">Price List Builder</h1>
-          <p className="text-text-muted text-[0.88rem] m-0">Reorder items and control what&apos;s visible on the public menu.</p>
-        </div>
-        <button onClick={() => setPreview((v) => !v)} className="btn btn-outline btn-sm">
-          {preview ? "Back to Editing" : "Live Preview"}
-        </button>
-      </div>
+      <PageHeader
+        title="Price List Builder"
+        description="Reorder items and control what's visible on the public menu."
+        actions={
+          <button onClick={() => setPreview((v) => !v)} className="btn btn-outline btn-sm">
+            {preview ? "Back to Editing" : "Live Preview"}
+          </button>
+        }
+      />
 
       {preview ? (
         <div className="space-y-10">

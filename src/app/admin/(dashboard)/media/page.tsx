@@ -3,6 +3,9 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useToast } from "@/components/admin/Toast";
+import PageHeader from "@/components/admin/PageHeader";
+import EmptyState from "@/components/admin/EmptyState";
+import { Image as ImageIcon } from "lucide-react";
 
 interface MediaAsset {
   id: string;
@@ -74,10 +77,11 @@ export default function AdminMediaPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h1 className="text-[1.6rem]">Media Library</h1>
-        <input className="field-input max-w-[240px]" placeholder="Search images…" value={search} onChange={(e) => setSearch(e.target.value)} />
-      </div>
+      <PageHeader
+        title="Media Library"
+        description="Upload and reuse images across products, categories, and website content."
+        actions={<input className="field-input max-w-[240px]" placeholder="Search images…" value={search} onChange={(e) => setSearch(e.target.value)} />}
+      />
 
       <label
         onDragOver={(e) => {
@@ -104,7 +108,7 @@ export default function AdminMediaPage() {
           ))}
         </div>
       ) : assets.length === 0 ? (
-        <div className="card p-12 text-center text-text-muted">No images yet — upload some above.</div>
+        <EmptyState icon={ImageIcon} title="No Images Yet" description="Upload images above to start building your library." />
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
           {assets.map((a) => (

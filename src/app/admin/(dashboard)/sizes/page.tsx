@@ -19,6 +19,22 @@ export default function AdminSizesPage() {
   const [newLabel, setNewLabel] = useState("");
   const [adding, setAdding] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<SizeRecord | null>(null);
+  const [seeding, setSeeding] = useState(false);
+
+  async function loadStarterSizes() {
+    setSeeding(true);
+    try {
+      const res = await fetch("/api/admin/seed-catalog", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not load starter sizes.");
+      showToast(data.sizes > 0 ? `Loaded ${data.sizes} size labels.` : "Sizes are already loaded.");
+      load();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Something went wrong.", "error");
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -91,7 +107,12 @@ export default function AdminSizesPage() {
       {loading ? (
         <TableSkeleton rows={4} />
       ) : sizes.length === 0 ? (
-        <div className="card p-10 text-center text-text-muted">No sizes yet — add your first one above.</div>
+        <div className="card p-10 text-center text-text-muted">
+          <p className="mb-4">No sizes yet — add your first one above, or load Masfira Maison&apos;s starter size list.</p>
+          <button onClick={loadStarterSizes} disabled={seeding} className="btn btn-outline btn-sm">
+            {seeding ? "Loading…" : "Load Starter Sizes"}
+          </button>
+        </div>
       ) : (
         <div className="card divide-y divide-border max-w-[480px]">
           {sizes.map((s) => (

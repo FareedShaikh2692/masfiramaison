@@ -5,6 +5,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { BUSINESS } from "@/data/data";
 import DateRangePicker, { DateRangeValue } from "@/components/admin/DateRangePicker";
 import { formatDate } from "@/lib/format";
+import PageHeader from "@/components/admin/PageHeader";
 
 interface AnalyticsData {
   series: { date: string; revenue: number; orders: number }[];
@@ -48,10 +49,7 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-7">
-        <h1 className="text-[1.6rem]">Analytics</h1>
-        <DateRangePicker value={dateRange} onChange={setDateRange} />
-      </div>
+      <PageHeader title="Analytics" description="Revenue trends, top products, and category performance." actions={<DateRangePicker value={dateRange} onChange={setDateRange} />} />
 
       {loading || !data ? (
         <div className="space-y-5">
