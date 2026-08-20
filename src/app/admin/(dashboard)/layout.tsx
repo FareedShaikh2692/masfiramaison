@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { verifySessionToken, ADMIN_SESSION_COOKIE } from "@/lib/adminSession";
 import AdminShell from "@/components/admin/AdminShell";
 import { ToastProvider } from "@/components/admin/Toast";
+
+export const metadata: Metadata = {
+  title: "Admin Dashboard | Masfira Maison",
+  robots: { index: false, follow: false }
+};
 
 export default async function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();

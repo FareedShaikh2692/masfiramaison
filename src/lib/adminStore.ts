@@ -50,3 +50,18 @@ export async function countAdmins(): Promise<number> {
   const rows = await sql`SELECT count(*)::int AS count FROM admins`;
   return rows[0].count as number;
 }
+
+export async function updateAdminPassword(id: string, passwordHash: string): Promise<void> {
+  await ensureTable();
+  const sql = getSql();
+  await sql`UPDATE admins SET password_hash = ${passwordHash} WHERE id = ${id}`;
+}
+
+export async function findAdminById(id: string): Promise<AdminUser | null> {
+  await ensureTable();
+  const sql = getSql();
+  const rows = await sql`SELECT id, email, password_hash, created_at FROM admins WHERE id = ${id}`;
+  if (!rows.length) return null;
+  const r = rows[0];
+  return { id: r.id, email: r.email, passwordHash: r.password_hash, createdAt: r.created_at };
+}

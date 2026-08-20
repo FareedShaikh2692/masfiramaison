@@ -136,3 +136,127 @@
     color: var(--text-muted);
   }
 }
+
+/* ============================================================
+   ADMIN DESIGN SYSTEM
+   Scoped under .admin-shell so it never touches the public site —
+   overrides the shared .card/.btn/.field-input primitives above
+   with tighter, "SaaS" proportions instead of the public site's
+   pill buttons and soft, editorial spacing.
+   ============================================================ */
+.admin-shell {
+  --a-shadow-xs: 0 1px 2px rgba(64, 51, 42, 0.05);
+  --a-shadow-sm: 0 2px 8px rgba(64, 51, 42, 0.06);
+  --a-shadow-md: 0 8px 24px rgba(64, 51, 42, 0.10);
+  font-family: var(--font-poppins), sans-serif;
+}
+
+.admin-shell .card {
+  border-radius: 16px;
+  box-shadow: var(--a-shadow-xs);
+}
+
+.admin-shell .btn {
+  border-radius: 10px;
+  padding: 0.7rem 1.35rem;
+  font-size: 0.87rem;
+  box-shadow: none;
+  transform: none !important;
+}
+.admin-shell .btn-primary {
+  box-shadow: 0 2px 10px rgba(169, 128, 61, 0.28);
+}
+.admin-shell .btn-primary:hover {
+  box-shadow: 0 4px 14px rgba(169, 128, 61, 0.34);
+}
+.admin-shell .btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+.admin-shell .field-input {
+  border-radius: 9px;
+  padding: 0.65rem 0.9rem;
+  font-size: 0.9rem;
+}
+
+.admin-page-title {
+  font-family: var(--font-playfair), serif;
+  font-size: 1.5rem;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.admin-page-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+.admin-section-title {
+  font-family: var(--font-playfair), serif;
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.admin-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.admin-caption {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.87rem;
+  font-weight: 500;
+  color: var(--text);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.admin-sidebar-link:hover {
+  background: var(--blush-soft);
+  color: var(--ink);
+}
+.admin-sidebar-link.active {
+  background: var(--blush-soft);
+  color: var(--gold-dark);
+  font-weight: 600;
+}
+.admin-sidebar-link.active svg {
+  color: var(--gold-dark);
+}
+.admin-sidebar-group-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0.9rem 0.75rem 0.3rem;
+}
+
+.admin-skeleton {
+  background: linear-gradient(90deg, var(--blush-soft) 25%, var(--border) 37%, var(--blush-soft) 63%);
+  background-size: 400% 100%;
+  animation: admin-shimmer 1.4s ease infinite;
+  border-radius: 10px;
+}
+@keyframes admin-shimmer {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}

@@ -4,6 +4,23 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BUSINESS } from "@/data/data";
 import DateRangePicker, { DateRangeValue } from "@/components/admin/DateRangePicker";
+import PageHeader from "@/components/admin/PageHeader";
+import StatCard from "@/components/admin/StatCard";
+import { CardGridSkeleton } from "@/components/admin/Skeleton";
+import {
+  ShoppingBag,
+  Clock,
+  ShieldCheck,
+  CheckCircle2,
+  PackageCheck,
+  XCircle,
+  Users,
+  Wallet,
+  CreditCard,
+  TrendingUp,
+  BarChart3,
+  Cake
+} from "lucide-react";
 
 interface Stats {
   totalOrders: number;
@@ -53,60 +70,52 @@ export default function AdminDashboardPage() {
 
   const cards = stats
     ? [
-        { label: "Total Orders", value: stats.totalOrders, href: "/admin/orders" },
-        { label: "Pending Orders", value: stats.pendingOrders, href: "/admin/orders?status=pending" },
-        { label: "Awaiting Verification", value: stats.paymentVerificationOrders, href: "/admin/orders?status=payment_verification" },
-        { label: "Confirmed", value: stats.confirmedOrders, href: "/admin/orders?status=confirmed" },
-        { label: "Completed", value: stats.completedOrders, href: "/admin/orders?status=completed" },
-        { label: "Cancelled", value: stats.cancelledOrders, href: "/admin/orders?status=cancelled" },
-        { label: "Customers", value: stats.totalCustomers, href: "/admin/customers" },
-        { label: "Revenue Collected", value: formatINR(stats.totalRevenue), href: "/admin/orders", accent: true },
-        { label: "Pending Payments", value: formatINR(stats.pendingPayments), href: "/admin/orders" },
-        { label: "Avg. Order Value", value: formatINR(stats.averageOrderValue), href: "/admin/analytics" }
+        { label: "Total Orders", value: String(stats.totalOrders), href: "/admin/orders", icon: ShoppingBag },
+        { label: "Pending Orders", value: String(stats.pendingOrders), href: "/admin/orders?status=pending", icon: Clock },
+        { label: "Awaiting Verification", value: String(stats.paymentVerificationOrders), href: "/admin/orders?status=payment_verification", icon: ShieldCheck },
+        { label: "Confirmed", value: String(stats.confirmedOrders), href: "/admin/orders?status=confirmed", icon: CheckCircle2 },
+        { label: "Completed", value: String(stats.completedOrders), href: "/admin/orders?status=completed", icon: PackageCheck },
+        { label: "Cancelled", value: String(stats.cancelledOrders), href: "/admin/orders?status=cancelled", icon: XCircle },
+        { label: "Customers", value: String(stats.totalCustomers), href: "/admin/customers", icon: Users },
+        { label: "Revenue Collected", value: formatINR(stats.totalRevenue), href: "/admin/orders", icon: Wallet },
+        { label: "Pending Payments", value: formatINR(stats.pendingPayments), href: "/admin/payments?paymentStatus=pending", icon: CreditCard },
+        { label: "Avg. Order Value", value: formatINR(stats.averageOrderValue), href: "/admin/analytics", icon: TrendingUp }
       ]
     : [];
 
+  const quickLinks = [
+    { href: "/admin/orders", title: "Manage Orders", description: "Review new orders, verify payments, and update order status.", icon: ShoppingBag },
+    { href: "/admin/products", title: "Manage Products", description: "Add cakes, update prices, and control what's visible on the site.", icon: Cake },
+    { href: "/admin/analytics", title: "View Analytics", description: "Revenue trends, top products and category performance.", icon: BarChart3 },
+    { href: "/admin/customers", title: "View Customers", description: "Order history, spending and notes for every customer.", icon: Users }
+  ];
+
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-7">
-        <h1 className="text-[1.6rem]">Dashboard</h1>
-        <DateRangePicker value={dateRange} onChange={setDateRange} />
-      </div>
+      <PageHeader title="Dashboard" description="An overview of Masfira Maison's orders, revenue and customers." actions={<DateRangePicker value={dateRange} onChange={setDateRange} />} />
 
       {loading || !stats ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {Array.from({ length: 10 }).map((_, i) => (
-            <div key={i} className="card p-5 h-[92px] animate-pulse" />
-          ))}
-        </div>
+        <CardGridSkeleton count={10} />
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {cards.map((c) => (
-            <Link key={c.label} href={c.href} className="card p-5 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
-              <div className="text-[0.78rem] text-text-muted mb-1.5">{c.label}</div>
-              <div className={`font-serif text-[1.5rem] font-bold ${c.accent ? "text-gold-dark" : "text-ink"}`}>{c.value}</div>
+            <Link key={c.label} href={c.href}>
+              <StatCard icon={c.icon} label={c.label} value={c.value} />
             </Link>
           ))}
         </div>
       )}
 
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
-        <Link href="/admin/orders" className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
-          <h3 className="text-[1.1rem] mb-1.5">Manage Orders</h3>
-          <p className="text-text-muted text-[0.88rem] m-0">Review new orders, verify payments, and update order status.</p>
-        </Link>
-        <Link href="/admin/products" className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
-          <h3 className="text-[1.1rem] mb-1.5">Manage Products</h3>
-          <p className="text-text-muted text-[0.88rem] m-0">Add cakes, update prices, and control what&apos;s visible on the site.</p>
-        </Link>
-        <Link href="/admin/analytics" className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
-          <h3 className="text-[1.1rem] mb-1.5">View Analytics</h3>
-          <p className="text-text-muted text-[0.88rem] m-0">Revenue trends, top products and category performance.</p>
-        </Link>
-        <Link href="/admin/customers" className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
-          <h3 className="text-[1.1rem] mb-1.5">View Customers</h3>
-          <p className="text-text-muted text-[0.88rem] m-0">Order history, spending and notes for every customer.</p>
-        </Link>
+        {quickLinks.map((q) => (
+          <Link key={q.href} href={q.href} className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
+            <span className="w-9 h-9 rounded-full flex items-center justify-center mb-3" style={{ background: "var(--blush-soft)" }}>
+              <q.icon size={17} color="var(--gold-dark)" />
+            </span>
+            <h3 className="admin-section-title mb-1.5">{q.title}</h3>
+            <p className="text-text-muted text-[0.88rem] m-0">{q.description}</p>
+          </Link>
+        ))}
       </div>
     </div>
   );
