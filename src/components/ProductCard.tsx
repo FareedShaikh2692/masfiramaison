@@ -1,12 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { BUSINESS } from "@/data/data";
 import { useOrder } from "@/components/order/OrderContext";
+import { useBusiness } from "@/components/BusinessContext";
 import type { Product } from "@/lib/types";
 
 export default function ProductCard({ product, featured = false }: { product: Product; featured?: boolean }) {
   const { openProductOrder } = useOrder();
+  const business = useBusiness();
 
   return (
     <article
@@ -20,7 +21,7 @@ export default function ProductCard({ product, featured = false }: { product: Pr
             {product.badge}
           </span>
         )}
-        <Image src={product.image} alt={`${product.name} — ${BUSINESS.name}`} fill sizes="(max-width: 768px) 100vw, 320px" className="object-cover" />
+        <Image src={product.image} alt={`${product.name} — ${business.name}`} fill sizes="(max-width: 768px) 100vw, 320px" className="object-cover" />
       </div>
       <div className="p-6 flex flex-col gap-3 flex-1">
         <h3 className="text-[1.28rem]">{product.name}</h3>
@@ -32,7 +33,7 @@ export default function ProductCard({ product, featured = false }: { product: Pr
         )}
         <div className="flex items-center justify-between mt-auto pt-3.5 border-t border-dashed border-border">
           <span className="font-serif text-[1.05rem] font-semibold text-gold-dark">
-            {product.price ? `${BUSINESS.currencySymbol}${product.price}` : "Price on request"}
+            {product.price ? `${business.currencySymbol}${product.price}` : "Price on request"}
             <small className="block font-sans text-[0.7rem] font-normal text-text-muted">Starting from</small>
           </span>
           <button

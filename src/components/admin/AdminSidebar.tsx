@@ -6,10 +6,17 @@ import Image from "next/image";
 
 const LINKS = [
   { href: "/admin", label: "Dashboard", exact: true },
+  { href: "/admin/analytics", label: "Analytics" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/products", label: "Products" },
   { href: "/admin/categories", label: "Categories" },
   { href: "/admin/flavors", label: "Flavors" },
+  { href: "/admin/sizes", label: "Sizes" },
+  { href: "/admin/customers", label: "Customers" },
+  { href: "/admin/coupons", label: "Coupons & Offers" },
+  { href: "/admin/delivery", label: "Delivery Zones" },
+  { href: "/admin/media", label: "Media Library" },
+  { href: "/admin/content", label: "Website Content" },
   { href: "/admin/settings", label: "Settings" }
 ];
 

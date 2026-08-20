@@ -57,6 +57,19 @@ function ensureTables(): Promise<void> {
           updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `;
+      // Additive migration — the products table already existed in production
+      // before this column was added, and CREATE TABLE IF NOT EXISTS doesn't
+      // retrofit existing tables.
+      await sql`ALTER TABLE products ADD COLUMN IF NOT EXISTS prep_time TEXT`;
+      await sql`
+        CREATE TABLE IF NOT EXISTS size_presets (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          label TEXT NOT NULL,
+          value TEXT NOT NULL,
+          display_order INT NOT NULL DEFAULT 0,
+          active BOOLEAN NOT NULL DEFAULT true
+        )
+      `;
     })();
   }
   return tablesReady;
@@ -232,6 +245,7 @@ function mapProduct(r: Record<string, unknown>, categorySlugById: Map<string, st
     packOptions: (r.pack_options as WeightOption[]) || undefined,
     badge: (r.badge as string) || undefined,
     featured: (r.featured as boolean) || undefined,
+    prepTime: (r.prep_time as string) || undefined,
     active: r.active as boolean,
     displayOrder: r.display_order as number
   };
@@ -276,6 +290,7 @@ export interface ProductInput {
   packOptions?: WeightOption[] | null;
   badge?: string | null;
   featured?: boolean;
+  prepTime?: string | null;
   active?: boolean;
   displayOrder?: number;
 }
@@ -287,14 +302,14 @@ export async function createProduct(input: ProductInput): Promise<ProductRecord>
   const rows = await sql`
     INSERT INTO products (
       slug, name, category_id, description, image, additional_images, flavors, fields,
-      price, price_per_unit, weight_options, pack_options, badge, featured, active, display_order
+      price, price_per_unit, weight_options, pack_options, badge, featured, prep_time, active, display_order
     ) VALUES (
       ${slug}, ${input.name}, ${input.categoryId}, ${input.description}, ${input.image},
       ${JSON.stringify(input.additionalImages || [])}::jsonb, ${JSON.stringify(input.flavors || [])}::jsonb,
       ${JSON.stringify(input.fields)}::jsonb, ${input.price}, ${input.pricePerUnit || false},
       ${input.weightOptions ? JSON.stringify(input.weightOptions) : null}::jsonb,
       ${input.packOptions ? JSON.stringify(input.packOptions) : null}::jsonb,
-      ${input.badge || null}, ${input.featured || false}, ${input.active ?? true}, ${input.displayOrder ?? 0}
+      ${input.badge || null}, ${input.featured || false}, ${input.prepTime || null}, ${input.active ?? true}, ${input.displayOrder ?? 0}
     )
     RETURNING *
   `;
@@ -315,7 +330,7 @@ export async function updateProduct(id: string, input: ProductInput): Promise<Pr
       price = ${input.price}, price_per_unit = ${input.pricePerUnit || false},
       weight_options = ${input.weightOptions ? JSON.stringify(input.weightOptions) : null}::jsonb,
       pack_options = ${input.packOptions ? JSON.stringify(input.packOptions) : null}::jsonb,
-      badge = ${input.badge || null}, featured = ${input.featured || false},
+      badge = ${input.badge || null}, featured = ${input.featured || false}, prep_time = ${input.prepTime || null},
       active = ${input.active ?? true}, display_order = ${input.displayOrder ?? 0},
       updated_at = now()
     WHERE id = ${id}
@@ -348,8 +363,62 @@ export async function duplicateProduct(id: string): Promise<ProductRecord | null
     weightOptions: existing.weightOptions,
     packOptions: existing.packOptions,
     badge: existing.badge,
+    prepTime: existing.prepTime,
     featured: false,
     active: false,
     displayOrder: existing.displayOrder
   });
+}
+
+/* ---------------------------------- Size Presets ---------------------------------- */
+/** A reusable library of size/weight labels admins can pick from when building a product's weight pricing — e.g. "Bento, 500g, 1kg, 1.5kg". */
+
+export interface SizePresetRecord {
+  id: string;
+  label: string;
+  value: string;
+  displayOrder: number;
+  active: boolean;
+}
+
+function mapSizePreset(r: Record<string, unknown>): SizePresetRecord {
+  return { id: r.id as string, label: r.label as string, value: r.value as string, displayOrder: r.display_order as number, active: r.active as boolean };
+}
+
+export async function listSizePresets(opts: { activeOnly?: boolean } = {}): Promise<SizePresetRecord[]> {
+  await ensureTables();
+  const sql = getSql();
+  const rows = opts.activeOnly
+    ? await sql`SELECT * FROM size_presets WHERE active = true ORDER BY display_order ASC`
+    : await sql`SELECT * FROM size_presets ORDER BY display_order ASC`;
+  return rows.map(mapSizePreset);
+}
+
+export async function createSizePreset(label: string, displayOrder = 0): Promise<SizePresetRecord> {
+  await ensureTables();
+  const sql = getSql();
+  const value = label.toLowerCase().replace(/\s+/g, "");
+  const rows = await sql`INSERT INTO size_presets (label, value, display_order) VALUES (${label}, ${value}, ${displayOrder}) RETURNING *`;
+  return mapSizePreset(rows[0]);
+}
+
+export async function updateSizePreset(id: string, patch: Partial<{ label: string; displayOrder: number; active: boolean }>): Promise<SizePresetRecord | null> {
+  await ensureTables();
+  const sql = getSql();
+  const existingRows = await sql`SELECT * FROM size_presets WHERE id = ${id}`;
+  if (!existingRows.length) return null;
+  const existing = mapSizePreset(existingRows[0]);
+  const next = { ...existing, ...patch };
+  const value = patch.label ? patch.label.toLowerCase().replace(/\s+/g, "") : existing.value;
+  const rows = await sql`
+    UPDATE size_presets SET label = ${next.label}, value = ${value}, display_order = ${next.displayOrder}, active = ${next.active}
+    WHERE id = ${id} RETURNING *
+  `;
+  return mapSizePreset(rows[0]);
+}
+
+export async function deleteSizePreset(id: string): Promise<void> {
+  await ensureTables();
+  const sql = getSql();
+  await sql`DELETE FROM size_presets WHERE id = ${id}`;
 }

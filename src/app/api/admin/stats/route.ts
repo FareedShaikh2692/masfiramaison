@@ -1,38 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { readOrders } from "@/lib/orderStore";
-
-const RANGE_DAYS: Record<string, number | null> = {
-  today: 0,
-  yesterday: 1,
-  "7d": 7,
-  "30d": 30,
-  all: null
-};
+import { filterByRange } from "@/lib/dateRange";
 
 export async function GET(req: NextRequest) {
   const range = req.nextUrl.searchParams.get("range") || "30d";
+  const from = req.nextUrl.searchParams.get("from");
+  const to = req.nextUrl.searchParams.get("to");
   const orders = await readOrders();
-
-  let filtered = orders;
-  const days = RANGE_DAYS[range];
-  if (days != null) {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    cutoff.setHours(0, 0, 0, 0);
-    if (range === "yesterday") {
-      const startOfYesterday = new Date(cutoff);
-      const endOfYesterday = new Date(cutoff);
-      endOfYesterday.setDate(endOfYesterday.getDate() + 1);
-      filtered = orders.filter((o) => {
-        const d = new Date(o.createdAt);
-        return d >= startOfYesterday && d < endOfYesterday;
-      });
-    } else if (range === "today") {
-      filtered = orders.filter((o) => new Date(o.createdAt) >= cutoff);
-    } else {
-      filtered = orders.filter((o) => new Date(o.createdAt) >= cutoff);
-    }
-  }
+  const filtered = filterByRange(orders, range, from, to);
 
   const byStatus = (status: string) => filtered.filter((o) => o.status === status).length;
 

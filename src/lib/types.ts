@@ -73,6 +73,8 @@ export interface Product {
   badge?: string;
   /** Richer visual treatment for the Maison Specials shelf. */
   featured?: boolean;
+  /** Free-text, e.g. "24 hours notice" — informational only, not enforced against the lead-time check. */
+  prepTime?: string;
 }
 
 export interface ProductCategory {
@@ -126,6 +128,25 @@ export interface Testimonial {
   name: string;
 }
 
+export type PaymentStatus = "pending" | "partially_paid" | "paid" | "failed" | "refunded";
+
+export const PAYMENT_STATUS_LABEL: Record<PaymentStatus, string> = {
+  pending: "Pending",
+  partially_paid: "Partially Paid",
+  paid: "Paid",
+  failed: "Failed",
+  refunded: "Refunded"
+};
+
+export interface PaymentEvent {
+  at: string;
+  method?: PaymentMethodConfig["id"];
+  amount: number;
+  status: PaymentStatus;
+  reference?: string | null;
+  note?: string;
+}
+
 /** Shape persisted by the order API — see src/lib/orderStore.ts */
 export interface OrderRecord {
   orderId: string;
@@ -164,6 +185,7 @@ export interface OrderRecord {
 
   deliveryCharge: number | null;
   itemPrice: number | null;
+  customDesignCharge?: number | null;
   total: number | null;
 
   termsAccepted: boolean;
@@ -173,4 +195,9 @@ export interface OrderRecord {
   balanceDue?: number | null;
   razorpayPaymentId?: string | null;
   razorpayOrderId?: string | null;
+  paymentStatus?: PaymentStatus;
+  paymentHistory?: PaymentEvent[];
+  couponCode?: string | null;
+  discountAmount?: number | null;
+  adminNote?: string;
 }

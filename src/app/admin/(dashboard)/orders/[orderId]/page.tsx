@@ -25,6 +25,9 @@ export default function AdminOrderDetailPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [advanceInput, setAdvanceInput] = useState("");
+  const [itemPriceInput, setItemPriceInput] = useState("");
+  const [designChargeInput, setDesignChargeInput] = useState("");
+  const [deliveryChargeInput, setDeliveryChargeInput] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -37,6 +40,9 @@ export default function AdminOrderDetailPage() {
     const data = await res.json();
     setOrder(data.order);
     setAdvanceInput(data.order.advancePaid != null ? String(data.order.advancePaid) : "");
+    setItemPriceInput(data.order.itemPrice != null ? String(data.order.itemPrice) : "");
+    setDesignChargeInput(data.order.customDesignCharge != null ? String(data.order.customDesignCharge) : "");
+    setDeliveryChargeInput(data.order.deliveryCharge != null ? String(data.order.deliveryCharge) : "");
     setLoading(false);
   }, [orderId]);
 
@@ -56,6 +62,32 @@ export default function AdminOrderDetailPage() {
       if (!res.ok) throw new Error(data.error || "Could not update order.");
       setOrder(data.order);
       showToast(`Status updated to "${ORDER_STATUS_LABEL[status]}".`);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Something went wrong.", "error");
+    } finally {
+      setUpdating(false);
+    }
+  }
+
+  async function savePricing() {
+    const itemPrice = itemPriceInput === "" ? null : Number(itemPriceInput);
+    const customDesignCharge = designChargeInput === "" ? null : Number(designChargeInput);
+    const deliveryCharge = deliveryChargeInput === "" ? null : Number(deliveryChargeInput);
+    const total = itemPrice == null && customDesignCharge == null && deliveryCharge == null
+      ? null
+      : (itemPrice || 0) + (customDesignCharge || 0) + (deliveryCharge || 0);
+
+    setUpdating(true);
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ itemPrice, customDesignCharge, deliveryCharge, total })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not update pricing.");
+      setOrder(data.order);
+      showToast("Pricing updated.");
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Something went wrong.", "error");
     } finally {
@@ -218,10 +250,30 @@ export default function AdminOrderDetailPage() {
         </div>
 
         <div className="card p-5 md:col-span-2">
-          <p className="field-label mb-3">Payment</p>
-          <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-[0.9rem] mb-4">
-            <Row label="Total Amount" value={order.total != null ? `₹${order.total}` : "To be confirmed"} />
-            <Row label="Delivery Charge" value={order.deliveryCharge != null ? `₹${order.deliveryCharge}` : undefined} />
+          <p className="field-label mb-3">Pricing Breakdown</p>
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <div>
+              <label className="field-label">Base / Item Price (₹)</label>
+              <input className="field-input" type="number" min={0} value={itemPriceInput} onChange={(e) => setItemPriceInput(e.target.value)} />
+            </div>
+            <div>
+              <label className="field-label">Custom Design Charge (₹)</label>
+              <input className="field-input" type="number" min={0} value={designChargeInput} onChange={(e) => setDesignChargeInput(e.target.value)} />
+            </div>
+            <div>
+              <label className="field-label">Delivery Charge (₹)</label>
+              <input className="field-input" type="number" min={0} value={deliveryChargeInput} onChange={(e) => setDeliveryChargeInput(e.target.value)} />
+            </div>
+          </div>
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={savePricing} disabled={updating} className="btn btn-outline btn-sm">
+              Save Pricing
+            </button>
+            <span className="text-[0.9rem] text-ink">
+              Total: <strong className="text-gold-dark">{order.total != null ? `₹${order.total}` : "To be confirmed"}</strong>
+            </span>
+          </div>
+          <dl className="grid grid-cols-2 gap-x-6 gap-y-2 text-[0.9rem] mb-4 pt-4 border-t border-border">
             <Row label="Payment Method" value={order.paymentMethod} />
             <Row label="Balance Due" value={balanceDue != null ? `₹${balanceDue}` : undefined} />
           </dl>

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import NotificationBell from "@/components/admin/NotificationBell";
 
 export default function AdminTopbar({ email, onMenuClick }: { email: string; onMenuClick: () => void }) {
   const router = useRouter();
@@ -29,6 +30,7 @@ export default function AdminTopbar({ email, onMenuClick }: { email: string; onM
       <div className="flex-1" />
 
       <div className="flex items-center gap-4">
+        <NotificationBell />
         <span className="text-[0.86rem] text-text-muted hidden sm:inline">{email}</span>
         <button onClick={handleLogout} disabled={loggingOut} className="btn btn-outline btn-sm">
           {loggingOut ? "Logging out…" : "Log Out"}

@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { DESIGN_OPTIONS, WEIGHTS, DELIVERY_AREAS, PAYMENT_METHODS } from "@/data/data";
+import { DESIGN_OPTIONS, WEIGHTS } from "@/data/data";
 import { OCCASIONS, ADD_ONS, PICKUP_SLOTS } from "@/lib/types";
 import type { FulfillmentType, Product } from "@/lib/types";
 import { formatDate, minOrderDate, isDateAvailable } from "@/lib/format";
 import OrderSummary from "@/components/order/OrderSummary";
 import TermsCheckbox from "@/components/order/TermsCheckbox";
 import type { OrderPrefill } from "@/components/order/OrderContext";
+import { useBusiness } from "@/components/BusinessContext";
+import type { DeliveryZoneRecord } from "@/lib/deliveryStore";
 
 const EMPTY_PRODUCT: Product = { id: "", name: "", category: "", description: "", image: "", price: null, fields: [] };
 
@@ -36,6 +38,8 @@ export interface OrderSnapshot {
   deliveryCharge: number | null;
   total: number | null;
   cashEligible: boolean;
+  couponCode?: string;
+  discountAmount?: number;
 }
 
 export default function ProductOrderForm({
@@ -45,10 +49,12 @@ export default function ProductOrderForm({
   prefill: OrderPrefill;
   onOrderCreated: (snapshot: OrderSnapshot) => void;
 }) {
+  const business = useBusiness();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [flavorsList, setFlavorsList] = useState<string[]>([]);
   const [catalogLoaded, setCatalogLoaded] = useState(false);
+  const [zones, setZones] = useState<DeliveryZoneRecord[]>([]);
 
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -67,7 +73,7 @@ export default function ProductOrderForm({
   const [addOns, setAddOns] = useState<string[]>([]);
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [fulfillment, setFulfillment] = useState<FulfillmentType>("pickup");
-  const [deliveryAreaId, setDeliveryAreaId] = useState(DELIVERY_AREAS[0].id);
+  const [deliveryAreaId, setDeliveryAreaId] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
   const [postalCode, setPostalCode] = useState("");
@@ -78,16 +84,22 @@ export default function ProductOrderForm({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const [couponInput, setCouponInput] = useState("");
+  const [couponApplying, setCouponApplying] = useState(false);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<{ couponId: string; code: string; discount: number } | null>(null);
+
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/catalog")
-      .then((r) => r.json())
-      .then((data) => {
+    Promise.all([fetch("/api/catalog").then((r) => r.json()), fetch("/api/delivery-zones").then((r) => r.json())])
+      .then(([catalog, delivery]) => {
         if (cancelled) return;
-        setProducts(data.products || []);
-        setCategories(data.categories || []);
-        setFlavorsList(data.flavors || []);
-        setProductId((current) => current || prefill.productId || data.products?.[0]?.id || "");
+        setProducts(catalog.products || []);
+        setCategories(catalog.categories || []);
+        setFlavorsList(catalog.flavors || []);
+        setProductId((current) => current || prefill.productId || catalog.products?.[0]?.id || "");
+        setZones(delivery.zones || []);
+        setDeliveryAreaId((current) => current || delivery.zones?.[0]?.id || "");
         setCatalogLoaded(true);
       })
       .catch(() => setCatalogLoaded(true));
@@ -100,11 +112,10 @@ export default function ProductOrderForm({
   const product = useMemo(() => products.find((p) => p.id === productId) || EMPTY_PRODUCT, [products, productId]);
   const weightOptions = product.weightOptions || WEIGHTS;
   const packOptions = useMemo(() => product.packOptions || [], [product]);
-  const minDate = minOrderDate();
-  const cashOption = PAYMENT_METHODS.find((m) => m.id === "cash");
+  const minDate = minOrderDate(business.leadTimeDays);
 
-  const deliveryArea = DELIVERY_AREAS.find((a) => a.id === deliveryAreaId);
-  const deliveryCharge = fulfillment === "delivery" ? deliveryArea?.charge ?? null : 0;
+  const deliveryArea = zones.find((a) => a.id === deliveryAreaId);
+  const deliveryCharge = fulfillment === "delivery" ? (deliveryArea?.chargeType === "fixed" ? deliveryArea.fixedCharge : null) : 0;
 
   const itemPrice = useMemo(() => {
     if (product.price == null) return null;
@@ -122,8 +133,36 @@ export default function ProductOrderForm({
     return product.price;
   }, [product, weightOptions, weight, packOptions, packSize, quantity]);
 
-  const total = itemPrice != null && deliveryCharge != null ? itemPrice + deliveryCharge : null;
+  const preDiscountTotal = itemPrice != null && deliveryCharge != null ? itemPrice + deliveryCharge : null;
+  const total = preDiscountTotal != null && appliedCoupon ? Math.max(0, preDiscountTotal - appliedCoupon.discount) : preDiscountTotal;
   const cashEligible = fulfillment === "pickup";
+
+  async function applyCoupon() {
+    if (!couponInput.trim()) return;
+    setCouponApplying(true);
+    setCouponError(null);
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: couponInput.trim(), orderAmount: itemPrice ?? 0, categoryId: product.category, productId: product.id })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "This coupon code isn't valid.");
+      setAppliedCoupon({ couponId: data.couponId, code: data.code, discount: data.discount });
+    } catch (err) {
+      setAppliedCoupon(null);
+      setCouponError(err instanceof Error ? err.message : "This coupon code isn't valid.");
+    } finally {
+      setCouponApplying(false);
+    }
+  }
+
+  function removeCoupon() {
+    setAppliedCoupon(null);
+    setCouponInput("");
+    setCouponError(null);
+  }
 
   function weightLabel() {
     if (!product.fields.includes("weight")) return undefined;
@@ -161,7 +200,7 @@ export default function ProductOrderForm({
       if (!address.trim()) next.address = true;
       if (!city.trim()) next.city = true;
     }
-    if (!preferredDate || !isDateAvailable(preferredDate)) next.preferredDate = true;
+    if (!preferredDate || !isDateAvailable(preferredDate, business)) next.preferredDate = true;
     if (!pickupSlot) next.pickupSlot = true;
     if (!termsAccepted) next.termsAccepted = true;
     setErrors(next);
@@ -201,7 +240,10 @@ export default function ProductOrderForm({
       itemPrice,
       deliveryCharge,
       total,
-      termsAccepted
+      termsAccepted,
+      couponCode: appliedCoupon?.code,
+      couponId: appliedCoupon?.couponId,
+      discountAmount: appliedCoupon?.discount
     };
 
     try {
@@ -237,7 +279,9 @@ export default function ProductOrderForm({
         itemPrice,
         deliveryCharge,
         total,
-        cashEligible
+        cashEligible,
+        couponCode: payload.couponCode,
+        discountAmount: payload.discountAmount
       });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
@@ -445,9 +489,9 @@ export default function ProductOrderForm({
           <>
             <Field label="Delivery Area">
               <select className="field-input" value={deliveryAreaId} onChange={(e) => setDeliveryAreaId(e.target.value)}>
-                {DELIVERY_AREAS.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name} {a.charge != null ? `— ₹${a.charge}` : "— charges confirmed on request"}
+                {zones.map((z) => (
+                  <option key={z.id} value={z.id}>
+                    {z.name} {zoneChargeLabel(z)}
                   </option>
                 ))}
               </select>
@@ -467,7 +511,7 @@ export default function ProductOrderForm({
         ) : (
           <div className="rounded-[10px] px-4 py-3.5 text-[0.84rem] text-ink flex gap-2.5" style={{ background: "var(--blush-soft)" }}>
             <span>📍</span>
-            <span>Pickup from {cashOption ? "our Kondhwa location" : "our location"} — the exact address is shared once your order is confirmed.</span>
+            <span>Pickup from {business.area ? `our ${business.area} location` : "our location"} — the exact address is shared once your order is confirmed.</span>
           </div>
         )}
       </FormSection>
@@ -494,7 +538,42 @@ export default function ProductOrderForm({
         <p className="field-hint">Please place your order in advance so we can prepare your cake fresh for your special occasion.</p>
       </FormSection>
 
-      <OrderSummary rows={summaryRows} deliveryCharge={deliveryCharge} itemPrice={itemPrice} total={total} />
+      <FormSection title="Coupon Code">
+        {appliedCoupon ? (
+          <div className="flex items-center justify-between gap-3 rounded-[10px] px-4 py-3.5 border border-gold bg-blush-soft">
+            <span className="text-[0.88rem] text-ink">
+              <strong>{appliedCoupon.code}</strong> applied — you save ₹{appliedCoupon.discount}
+            </span>
+            <button type="button" onClick={removeCoupon} className="text-[0.8rem] text-danger font-medium">
+              Remove
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="flex gap-2.5">
+              <input
+                className="field-input"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                placeholder="Enter coupon code"
+              />
+              <button type="button" onClick={applyCoupon} disabled={couponApplying || !couponInput.trim()} className="btn btn-outline btn-sm flex-shrink-0">
+                {couponApplying ? "Checking…" : "Apply"}
+              </button>
+            </div>
+            {couponError && <span className="text-danger text-[0.78rem] mt-1.5 block">{couponError}</span>}
+          </div>
+        )}
+      </FormSection>
+
+      <OrderSummary
+        rows={summaryRows}
+        deliveryCharge={deliveryCharge}
+        itemPrice={itemPrice}
+        total={total}
+        discount={appliedCoupon?.discount}
+        discountLabel={appliedCoupon ? `Coupon (${appliedCoupon.code})` : undefined}
+      />
 
       <TermsCheckbox checked={termsAccepted} onChange={setTermsAccepted} error={errors.termsAccepted} />
 
@@ -517,6 +596,12 @@ function FormSection({ title, children }: { title: string; children: React.React
       <div className="space-y-4">{children}</div>
     </div>
   );
+}
+
+function zoneChargeLabel(z: DeliveryZoneRecord) {
+  if (z.chargeType === "fixed") return z.fixedCharge != null ? `— ₹${z.fixedCharge}` : "";
+  if (z.chargeType === "range") return z.minCharge != null && z.maxCharge != null ? `— ₹${z.minCharge}–${z.maxCharge}` : "";
+  return "— charges confirmed on request";
 }
 
 function Field({ label, error, children }: { label: string; error?: boolean; children: React.ReactNode }) {

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useOrder } from "@/components/order/OrderContext";
+import { useBusiness } from "@/components/BusinessContext";
 
 const LINKS = [
   { href: "/#home", label: "Home" },
@@ -20,6 +21,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { openProductOrder } = useOrder();
+  const business = useBusiness();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -42,7 +44,7 @@ export default function Navbar() {
         <div className="container-app flex items-center justify-between gap-5">
           <Link href="/#home" className="flex items-center gap-3">
             <Image src="/images/monogram.svg" alt="" width={42} height={42} priority />
-            <span className="font-serif text-2xl font-bold text-ink">Masfira Maison</span>
+            <span className="font-serif text-2xl font-bold text-ink">{business.name}</span>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-[clamp(10px,1.4vw,22px)]" aria-label="Primary">

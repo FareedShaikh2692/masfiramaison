@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     weightOptions: body.weightOptions || null,
     packOptions: body.packOptions || null,
     badge: body.badge || null,
+    prepTime: body.prepTime || null,
     featured: Boolean(body.featured),
     active: body.active ?? true,
     displayOrder: body.displayOrder ?? 0

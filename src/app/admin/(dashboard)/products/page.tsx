@@ -63,6 +63,7 @@ export default function AdminProductsPage() {
       categoryId: form.categoryId || null,
       description: form.description,
       image: form.image,
+      additionalImages: form.additionalImages,
       flavors: form.flavors,
       fields: form.fields,
       price: form.price === "" ? null : Number(form.price),
@@ -70,6 +71,7 @@ export default function AdminProductsPage() {
       weightOptions: form.weightOptions.length ? form.weightOptions : null,
       packOptions: form.packOptions.length ? form.packOptions : null,
       badge: form.badge || null,
+      prepTime: form.prepTime || null,
       featured: form.featured,
       active: form.active
     };

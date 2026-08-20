@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { BUSINESS } from "@/data/data";
+import type { BusinessSettings } from "@/lib/settingsStore";
 
-export default function Footer() {
+export default function Footer({ business }: { business: BusinessSettings }) {
   return (
     <footer className="print:hidden text-white/60 text-[0.88rem]" style={{ background: "#34291F" }}>
       <div className="container-app flex flex-wrap items-center justify-between gap-5 py-12">
-        <span className="font-serif text-lg text-white">{BUSINESS.name}</span>
+        <span className="font-serif text-lg text-white">{business.name}</span>
         <nav className="flex flex-wrap gap-5" aria-label="Footer">
           <Link href="/#home" className="hover:text-gold-light">Home</Link>
           <Link href="/#menu" className="hover:text-gold-light">Our Menu</Link>
@@ -16,7 +16,7 @@ export default function Footer() {
         </nav>
       </div>
       <div className="text-center opacity-60 text-[0.8rem] pb-7">
-        &copy; {new Date().getFullYear()} {BUSINESS.name}. All rights reserved.
+        &copy; {new Date().getFullYear()} {business.name}. All rights reserved.
       </div>
     </footer>
   );

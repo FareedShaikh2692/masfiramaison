@@ -1,11 +1,13 @@
 "use client";
 
-import { BUSINESS } from "@/data/data";
+import { WHATSAPP_GREETING } from "@/data/data";
 import { waLink } from "@/lib/format";
 import { useOrder } from "@/components/order/OrderContext";
+import { useBusiness } from "@/components/BusinessContext";
 
 export default function Contact() {
   const { openProductOrder } = useOrder();
+  const business = useBusiness();
 
   return (
     <section id="contact" className="py-28 text-blush-soft" style={{ background: "var(--ink)" }}>
@@ -19,15 +21,15 @@ export default function Contact() {
         <div className="grid sm:grid-cols-3 gap-6 max-w-[820px] mx-auto mb-2">
           <div className="rounded-[18px] p-7 border border-white/10" style={{ background: "rgba(255,255,255,0.06)" }}>
             <h4 className="text-white text-[1.02rem] mb-1.5">WhatsApp</h4>
-            <p className="text-white/65 text-[0.9rem] mb-4">+{BUSINESS.countryCode} {BUSINESS.phone}</p>
-            <a href={waLink()} target="_blank" rel="noopener" className="btn btn-whatsapp btn-sm">
+            <p className="text-white/65 text-[0.9rem] mb-4">+{business.countryCode} {business.phone}</p>
+            <a href={waLink(WHATSAPP_GREETING, business)} target="_blank" rel="noopener" className="btn btn-whatsapp btn-sm">
               WhatsApp Us
             </a>
           </div>
           <div className="rounded-[18px] p-7 border border-white/10" style={{ background: "rgba(255,255,255,0.06)" }}>
             <h4 className="text-white text-[1.02rem] mb-1.5">Instagram</h4>
-            <p className="text-white/65 text-[0.9rem] mb-4">{BUSINESS.instagramHandle}</p>
-            <a href={BUSINESS.instagramUrl} target="_blank" rel="noopener" className="btn btn-sm" style={{ border: "1px solid rgba(255,255,255,0.5)", color: "white" }}>
+            <p className="text-white/65 text-[0.9rem] mb-4">{business.instagramHandle}</p>
+            <a href={business.instagramUrl} target="_blank" rel="noopener" className="btn btn-sm" style={{ border: "1px solid rgba(255,255,255,0.5)", color: "white" }}>
               Follow on Instagram
             </a>
           </div>

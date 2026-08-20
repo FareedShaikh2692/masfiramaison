@@ -1,10 +1,11 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { PAYMENT_METHODS, BUSINESS } from "@/data/data";
+import { PAYMENT_METHODS } from "@/data/data";
 import { formatCurrency } from "@/lib/format";
 import type { PaymentMethodConfig, OrderStatus } from "@/lib/types";
 import RazorpayButton from "@/components/order/RazorpayButton";
+import { useBusiness } from "@/components/BusinessContext";
 
 const RAZORPAY_ENABLED = Boolean(process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID);
 const ONLINE_METHODS: PaymentMethodConfig["id"][] = ["googlepay", "upi", "paytm"];
@@ -26,6 +27,7 @@ export default function PaymentStep({
   customerEmail?: string;
   onConfirmed: (method: PaymentMethodConfig["id"], status: OrderStatus) => void;
 }) {
+  const business = useBusiness();
   const availableMethods = PAYMENT_METHODS.filter((m) => !m.pickupOnly || cashEligible);
   const [method, setMethod] = useState<PaymentMethodConfig["id"]>("upi");
   const [amount, setAmount] = useState<number | "">(total ?? "");
@@ -156,7 +158,7 @@ export default function PaymentStep({
             ) : (
               <p className="text-[0.9rem] text-text-muted m-0">
                 Our team will share the {selected.label} QR code / payment ID with you directly on WhatsApp after reviewing your order.
-                {RAZORPAY_ENABLED ? "" : ` (${BUSINESS.name} hasn't enabled instant online checkout yet.)`}
+                {RAZORPAY_ENABLED ? "" : ` (${business.name} hasn't enabled instant online checkout yet.)`}
               </p>
             )}
           </div>

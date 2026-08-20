@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 import { BUSINESS } from "@/data/data";
+import { getBusinessSettings } from "@/lib/settingsStore";
+import { BusinessProvider } from "@/components/BusinessContext";
 import { OrderProvider } from "@/components/order/OrderContext";
 import Navbar from "@/components/Navbar";
 import MobileBottomNav from "@/components/MobileBottomNav";
@@ -46,7 +48,11 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const business = await getBusinessSettings();
+
   return (
     <html lang="en" className={`${playfair.variable} ${poppins.variable}`}>
       <head>
@@ -56,37 +62,42 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Bakery",
-              name: BUSINESS.name,
+              name: business.name,
               description: "Premium homemade cakes, bento cakes and custom celebration cakes, freshly baked to order.",
-              telephone: `+${BUSINESS.countryCode}${BUSINESS.phone}`,
+              telephone: `+${business.countryCode}${business.phone}`,
               priceRange: "₹₹",
-              sameAs: [BUSINESS.instagramUrl],
-              address: {
-                "@type": "PostalAddress",
-                streetAddress: BUSINESS.addressLine,
-                addressLocality: BUSINESS.area,
-                addressRegion: BUSINESS.city,
-                postalCode: "411048",
-                addressCountry: "IN"
-              }
+              sameAs: [business.instagramUrl],
+              ...(business.addressLine
+                ? {
+                    address: {
+                      "@type": "PostalAddress",
+                      streetAddress: business.addressLine,
+                      addressLocality: business.area,
+                      addressRegion: business.city,
+                      addressCountry: "IN"
+                    }
+                  }
+                : {})
             })
           }}
         />
       </head>
       <body className="min-h-screen flex flex-col antialiased pb-[78px] md:pb-0">
-        <OrderProvider>
-          <a href="#main" className="sr-only focus:not-sr-only fixed top-0 left-0 z-[2000] bg-ink text-white px-5 py-3">
-            Skip to content
-          </a>
-          <Navbar />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <Footer />
-          <MobileBottomNav />
-          <WhatsappFloat />
-          <OrderPanel />
-        </OrderProvider>
+        <BusinessProvider business={business}>
+          <OrderProvider>
+            <a href="#main" className="sr-only focus:not-sr-only fixed top-0 left-0 z-[2000] bg-ink text-white px-5 py-3">
+              Skip to content
+            </a>
+            <Navbar />
+            <main id="main" className="flex-1">
+              {children}
+            </main>
+            <Footer business={business} />
+            <MobileBottomNav />
+            <WhatsappFloat />
+            <OrderPanel />
+          </OrderProvider>
+        </BusinessProvider>
       </body>
     </html>
   );

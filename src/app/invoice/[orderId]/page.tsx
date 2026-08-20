@@ -1,19 +1,20 @@
 import { notFound } from "next/navigation";
 import { readOrders } from "@/lib/orderStore";
-import { BUSINESS, DELIVERY_AREAS } from "@/data/data";
+import { getBusinessSettings } from "@/lib/settingsStore";
+import { listDeliveryZones } from "@/lib/deliveryStore";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 import PrintButton from "./PrintButton";
 
 export default async function InvoicePage({ params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;
-  const orders = await readOrders();
+  const [orders, business, zones] = await Promise.all([readOrders(), getBusinessSettings(), listDeliveryZones()]);
   const order = orders.find((o) => o.orderId === orderId);
 
   if (!order) notFound();
 
   const isCustom = order.kind === "custom";
-  const deliveryArea = order.deliveryAreaId ? DELIVERY_AREAS.find((a) => a.id === order.deliveryAreaId) : undefined;
+  const deliveryArea = order.deliveryAreaId ? zones.find((a) => a.id === order.deliveryAreaId) : undefined;
 
   const lineItems: { label: string; value: string }[] = [
     { label: "Product", value: order.productName },
@@ -47,10 +48,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ orderI
         <div className="card p-10 print:border-0 print:shadow-none">
           <div className="flex flex-wrap items-start justify-between gap-6 pb-6 border-b border-border">
             <div>
-              <h1 className="text-[1.7rem] mb-1">{BUSINESS.name}</h1>
-              <p className="text-[0.84rem] text-text-muted m-0">{BUSINESS.addressLine}</p>
+              <h1 className="text-[1.7rem] mb-1">{business.name}</h1>
+              <p className="text-[0.84rem] text-text-muted m-0">{business.addressLine}</p>
               <p className="text-[0.84rem] text-text-muted m-0">
-                +{BUSINESS.countryCode} {BUSINESS.phone} &middot; {BUSINESS.instagramHandle}
+                +{business.countryCode} {business.phone} &middot; {business.instagramHandle}
               </p>
             </div>
             <div className="text-right">
@@ -83,12 +84,18 @@ export default async function InvoicePage({ params }: { params: Promise<{ orderI
             </div>
           </div>
 
-          {!isCustom && (
+          {order.total != null ? (
             <div className="py-6">
               <div className="flex justify-between py-1.5 text-[0.9rem]">
-                <span className="text-text-muted">Item Price</span>
+                <span className="text-text-muted">{isCustom ? "Base Price" : "Item Price"}</span>
                 <span className="text-ink font-medium">{formatCurrency(order.itemPrice)}</span>
               </div>
+              {isCustom && order.customDesignCharge != null && order.customDesignCharge > 0 && (
+                <div className="flex justify-between py-1.5 text-[0.9rem]">
+                  <span className="text-text-muted">Custom Design Charge</span>
+                  <span className="text-ink font-medium">{formatCurrency(order.customDesignCharge)}</span>
+                </div>
+              )}
               <div className="flex justify-between py-1.5 text-[0.9rem]">
                 <span className="text-text-muted">Delivery Charge</span>
                 <span className="text-ink font-medium">
@@ -112,11 +119,9 @@ export default async function InvoicePage({ params }: { params: Promise<{ orderI
                 </>
               )}
             </div>
-          )}
-
-          {isCustom && (
+          ) : (
             <p className="pt-6 text-[0.88rem] text-text-muted italic">
-              Final pricing for custom cakes is confirmed directly with {BUSINESS.name} once the design is finalized.
+              Final pricing for custom cakes is confirmed directly with {business.name} once the design is finalized.
             </p>
           )}
 

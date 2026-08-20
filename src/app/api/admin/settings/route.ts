@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getBusinessSettings, saveBusinessSettings, getTerms, saveTerms } from "@/lib/settingsStore";
 
 export async function GET() {
@@ -11,5 +12,6 @@ export async function PUT(req: NextRequest) {
   if (body.business) await saveBusinessSettings(body.business);
   if (body.terms) await saveTerms(body.terms);
   const [business, terms] = await Promise.all([getBusinessSettings(), getTerms()]);
+  revalidatePath("/", "layout");
   return NextResponse.json({ business, terms });
 }

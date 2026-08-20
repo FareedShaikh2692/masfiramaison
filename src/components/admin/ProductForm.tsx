@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ProductFieldKey, WeightOption } from "@/lib/types";
 import type { CategoryRecord, FlavorRecord, ProductRecord } from "@/lib/catalogStore";
+import MediaPickerModal from "@/components/admin/MediaPickerModal";
 
 const FIELD_OPTIONS: { key: ProductFieldKey; label: string }[] = [
   { key: "flavor", label: "Flavor" },
@@ -21,6 +22,7 @@ export interface ProductFormValue {
   categoryId: string;
   description: string;
   image: string;
+  additionalImages: string[];
   flavors: string[];
   fields: ProductFieldKey[];
   price: string;
@@ -29,6 +31,7 @@ export interface ProductFormValue {
   packOptions: WeightOption[];
   badge: string;
   featured: boolean;
+  prepTime: string;
   active: boolean;
 }
 
@@ -40,6 +43,7 @@ export function blankProductForm(): ProductFormValue {
     categoryId: "",
     description: "",
     image: "",
+    additionalImages: [],
     flavors: [],
     fields: [],
     price: "",
@@ -48,6 +52,7 @@ export function blankProductForm(): ProductFormValue {
     packOptions: [],
     badge: "",
     featured: false,
+    prepTime: "",
     active: true
   };
 }
@@ -58,6 +63,7 @@ export function productToForm(p: ProductRecord): ProductFormValue {
     categoryId: p.categoryId || "",
     description: p.description,
     image: p.image,
+    additionalImages: p.additionalImages || [],
     flavors: p.flavors || [],
     fields: p.fields,
     price: p.price == null ? "" : String(p.price),
@@ -66,6 +72,7 @@ export function productToForm(p: ProductRecord): ProductFormValue {
     packOptions: p.packOptions || [],
     badge: p.badge || "",
     featured: Boolean(p.featured),
+    prepTime: p.prepTime || "",
     active: p.active
   };
 }
@@ -134,6 +141,7 @@ export default function ProductForm({
   flavors: FlavorRecord[];
 }) {
   const [imageUploading, setImageUploading] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState<"main" | "additional" | null>(null);
 
   function set<K extends keyof ProductFormValue>(key: K, v: ProductFormValue[K]) {
     onChange({ ...value, [key]: v });
@@ -155,6 +163,13 @@ export default function ProductForm({
       set("image", e.target?.result as string);
       setImageUploading(false);
     };
+    reader.readAsDataURL(file);
+  }
+
+  function handleAdditionalImageFile(file: File | undefined) {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => set("additionalImages", [...value.additionalImages, e.target?.result as string]);
     reader.readAsDataURL(file);
   }
 
@@ -188,17 +203,62 @@ export default function ProductForm({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={value.image} alt="" className="w-24 h-24 object-cover rounded-[10px] border border-border mb-2.5" />
         )}
-        <label className="block border-2 border-dashed border-border rounded-[14px] p-4 text-center cursor-pointer hover:border-gold hover:bg-blush-soft transition-colors">
-          <span className="text-[0.85rem] text-text-muted">{imageUploading ? "Uploading…" : "Click or drag an image here"}</span>
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFile(e.target.files?.[0])} />
-        </label>
+        <div className="flex gap-2 mb-2">
+          <label className="flex-1 border-2 border-dashed border-border rounded-[14px] p-4 text-center cursor-pointer hover:border-gold hover:bg-blush-soft transition-colors">
+            <span className="text-[0.85rem] text-text-muted">{imageUploading ? "Uploading…" : "Click or drag an image here"}</span>
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageFile(e.target.files?.[0])} />
+          </label>
+          <button type="button" onClick={() => setPickerOpen("main")} className="btn btn-outline btn-sm whitespace-nowrap">
+            Choose From Library
+          </button>
+        </div>
         <input
-          className="field-input mt-2"
-          placeholder="…or paste an image URL"
+          className="field-input"
+          placeholder="…or paste an image URL / external reference"
           value={value.image.startsWith("data:") ? "" : value.image}
           onChange={(e) => set("image", e.target.value)}
         />
       </div>
+
+      <div>
+        <label className="field-label">Additional Images (optional)</label>
+        {value.additionalImages.length > 0 && (
+          <div className="flex flex-wrap gap-2.5 mb-2.5">
+            {value.additionalImages.map((img, i) => (
+              <div key={i} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={img} alt="" className="w-16 h-16 object-cover rounded-[8px] border border-border" />
+                <button
+                  type="button"
+                  onClick={() => set("additionalImages", value.additionalImages.filter((_, idx) => idx !== i))}
+                  aria-label="Remove"
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-danger text-white text-[0.7rem] leading-none"
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <label className="btn btn-outline btn-sm cursor-pointer">
+            + Upload Image
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => handleAdditionalImageFile(e.target.files?.[0])} />
+          </label>
+          <button type="button" onClick={() => setPickerOpen("additional")} className="btn btn-outline btn-sm">
+            Choose From Library
+          </button>
+        </div>
+      </div>
+
+      <MediaPickerModal
+        open={pickerOpen !== null}
+        onClose={() => setPickerOpen(null)}
+        onSelect={(dataUrl) => {
+          if (pickerOpen === "main") set("image", dataUrl);
+          else if (pickerOpen === "additional") set("additionalImages", [...value.additionalImages, dataUrl]);
+        }}
+      />
 
       <div>
         <label className="field-label">Flavors</label>
@@ -269,16 +329,21 @@ export default function ProductForm({
           <label className="field-label">Badge (optional)</label>
           <input className="field-input" placeholder="e.g. Bestseller" value={value.badge} onChange={(e) => set("badge", e.target.value)} />
         </div>
-        <div className="flex items-end gap-5 pb-3">
-          <label className="flex items-center gap-2 text-[0.88rem] text-ink cursor-pointer">
-            <input type="checkbox" checked={value.featured} onChange={(e) => set("featured", e.target.checked)} className="w-4 h-4 accent-[var(--gold-dark)]" />
-            Featured
-          </label>
-          <label className="flex items-center gap-2 text-[0.88rem] text-ink cursor-pointer">
-            <input type="checkbox" checked={value.active} onChange={(e) => set("active", e.target.checked)} className="w-4 h-4 accent-[var(--gold-dark)]" />
-            Active (visible on site)
-          </label>
+        <div>
+          <label className="field-label">Preparation Time (optional)</label>
+          <input className="field-input" placeholder="e.g. 24 hours notice" value={value.prepTime} onChange={(e) => set("prepTime", e.target.value)} />
         </div>
+      </div>
+
+      <div className="flex items-center gap-5">
+        <label className="flex items-center gap-2 text-[0.88rem] text-ink cursor-pointer">
+          <input type="checkbox" checked={value.featured} onChange={(e) => set("featured", e.target.checked)} className="w-4 h-4 accent-[var(--gold-dark)]" />
+          Featured
+        </label>
+        <label className="flex items-center gap-2 text-[0.88rem] text-ink cursor-pointer">
+          <input type="checkbox" checked={value.active} onChange={(e) => set("active", e.target.checked)} className="w-4 h-4 accent-[var(--gold-dark)]" />
+          Active (visible on site)
+        </label>
       </div>
     </div>
   );

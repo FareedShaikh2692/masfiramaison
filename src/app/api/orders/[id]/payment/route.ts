@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { updateOrder, saveUploadedImage, readOrders } from "@/lib/orderStore";
-import type { OrderStatus } from "@/lib/types";
+import { createNotification } from "@/lib/notificationStore";
+import type { OrderStatus, PaymentEvent, PaymentStatus } from "@/lib/types";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -37,18 +38,42 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // Cash orders have no online proof to verify — they stay "payment_pending" (cash is
   // collected at pickup) rather than moving into the manual-verification queue.
   const status: OrderStatus = isCash ? "payment_pending" : "payment_verification";
+  const paymentStatus: PaymentStatus = isCash
+    ? "pending"
+    : advancePaid != null && existing.total != null && advancePaid >= existing.total
+      ? "paid"
+      : "partially_paid";
+
+  const event: PaymentEvent = {
+    at: new Date().toISOString(),
+    method: body.paymentMethod,
+    amount: advancePaid || 0,
+    status: paymentStatus,
+    note: isCash ? "Cash to be collected at pickup" : "Screenshot submitted — awaiting manual verification"
+  };
 
   const updated = await updateOrder(id, {
     paymentMethod: body.paymentMethod,
     paymentScreenshot: screenshot,
     advancePaid,
     balanceDue,
-    status
+    status,
+    paymentStatus,
+    paymentHistory: [...(existing.paymentHistory || []), event]
   });
 
   if (!updated) {
     return NextResponse.json({ error: "Order not found." }, { status: 404 });
   }
+
+  await createNotification({
+    type: isCash ? "payment_pending" : "payment_received",
+    title: isCash ? "Order confirmed — cash at pickup" : "Payment screenshot submitted",
+    message: isCash
+      ? `${updated.fullName}'s order will be paid in cash at pickup.`
+      : `${updated.fullName} submitted a payment screenshot for verification — ₹${advancePaid ?? 0}.`,
+    orderId: updated.orderId
+  });
 
   return NextResponse.json({ orderId: updated.orderId, status: updated.status });
 }

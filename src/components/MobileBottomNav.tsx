@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { waLink } from "@/lib/format";
+import { WHATSAPP_GREETING } from "@/data/data";
 import { useOrder } from "@/components/order/OrderContext";
+import { useBusiness } from "@/components/BusinessContext";
 
 export default function MobileBottomNav() {
   const { openProductOrder } = useOrder();
+  const business = useBusiness();
 
   return (
     <nav
@@ -22,7 +25,7 @@ export default function MobileBottomNav() {
         Menu
       </Link>
       <a
-        href={waLink()}
+        href={waLink(WHATSAPP_GREETING, business)}
         target="_blank"
         rel="noopener"
         className="flex flex-col items-center justify-center gap-1 py-2.5 text-[0.68rem] font-semibold text-[#1fb959]"

@@ -1,11 +1,14 @@
 "use client";
 
 import { waLink } from "@/lib/format";
+import { WHATSAPP_GREETING } from "@/data/data";
+import { useBusiness } from "@/components/BusinessContext";
 
 export default function WhatsappFloat() {
+  const business = useBusiness();
   return (
     <a
-      href={waLink()}
+      href={waLink(WHATSAPP_GREETING, business)}
       target="_blank"
       rel="noopener"
       aria-label="Chat with us on WhatsApp"

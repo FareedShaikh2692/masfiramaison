@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CAKE_TYPES_FOR_CUSTOM, WEIGHTS, DESIGN_OPTIONS } from "@/data/data";
 import { minOrderDate, isDateAvailable } from "@/lib/format";
 import TermsCheckbox from "@/components/order/TermsCheckbox";
+import { useBusiness } from "@/components/BusinessContext";
 
 export interface CustomOrderSnapshot {
   orderId: string;
@@ -22,6 +23,7 @@ export interface CustomOrderSnapshot {
 }
 
 export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s: CustomOrderSnapshot) => void }) {
+  const business = useBusiness();
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -66,7 +68,7 @@ export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s:
     if (!flavor) next.flavor = true;
     if (!weight) next.weight = true;
     if (!design) next.design = true;
-    if (!preferredDate || !isDateAvailable(preferredDate)) next.preferredDate = true;
+    if (!preferredDate || !isDateAvailable(preferredDate, business)) next.preferredDate = true;
     if (!preferredTime) next.preferredTime = true;
     if (!termsAccepted) next.termsAccepted = true;
     setErrors(next);
@@ -193,7 +195,7 @@ export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s:
         </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Preferred Date" error={errors.preferredDate}>
-            <input className="field-input" type="date" min={minOrderDate()} value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} />
+            <input className="field-input" type="date" min={minOrderDate(business.leadTimeDays)} value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} />
           </Field>
           <Field label="Preferred Time" error={errors.preferredTime}>
             <input className="field-input" type="time" value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} />

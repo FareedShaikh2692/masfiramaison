@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BUSINESS } from "@/data/data";
+import { useBusiness } from "@/components/BusinessContext";
 
 interface RazorpayInstance {
   open: () => void;
@@ -43,6 +43,7 @@ export default function RazorpayButton({
   customerEmail?: string;
   onSuccess: () => void;
 }) {
+  const business = useBusiness();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,7 +65,7 @@ export default function RazorpayButton({
         key: orderData.keyId,
         amount: orderData.amount,
         currency: orderData.currency,
-        name: BUSINESS.name,
+        name: business.name,
         description: `Order ${orderId}`,
         order_id: orderData.razorpayOrderId,
         prefill: { name: customerName, contact: customerPhone, email: customerEmail || undefined },

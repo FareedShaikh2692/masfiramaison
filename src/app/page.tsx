@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import SpecialOffers from "@/components/SpecialOffers";
 import MenuSection from "@/components/MenuSection";
 import MaisonSpecials from "@/components/MaisonSpecials";
 import CustomCakeCta from "@/components/CustomCakeCta";
@@ -10,11 +11,14 @@ import Gallery from "@/components/Gallery";
 import Testimonials from "@/components/Testimonials";
 import InstagramStrip from "@/components/InstagramStrip";
 import Contact from "@/components/Contact";
+import { getHeroBanner } from "@/lib/contentStore";
 
-export default function Home() {
+export default async function Home() {
+  const banner = await getHeroBanner();
   return (
     <>
-      <Hero />
+      <Hero banner={banner} />
+      <SpecialOffers />
       <MenuSection />
       <MaisonSpecials />
       <CustomCakeCta />

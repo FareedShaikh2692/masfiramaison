@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { saveOrder, saveUploadedImage } from "@/lib/orderStore";
 import { generateOrderId } from "@/lib/format";
+import { createNotification } from "@/lib/notificationStore";
+import { incrementCouponUsage } from "@/lib/couponStore";
 import type { OrderRecord } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -58,9 +60,33 @@ export async function POST(req: NextRequest) {
     itemPrice: body.itemPrice ?? null,
     total: body.total ?? null,
 
-    termsAccepted: true
+    termsAccepted: true,
+    paymentStatus: "pending",
+    couponCode: body.couponCode || undefined,
+    discountAmount: body.discountAmount ?? undefined
   };
 
   await saveOrder(order);
+
+  if (body.couponId) {
+    await incrementCouponUsage(body.couponId);
+  }
+
+  await createNotification(
+    order.kind === "custom"
+      ? {
+          type: "custom_request",
+          title: "New custom cake request",
+          message: `${order.fullName} requested a custom cake — ${order.productName}.`,
+          orderId: order.orderId
+        }
+      : {
+          type: "new_order",
+          title: "New order placed",
+          message: `${order.fullName} ordered ${order.productName}${order.total != null ? ` (₹${order.total})` : ""}.`,
+          orderId: order.orderId
+        }
+  );
+
   return NextResponse.json({ orderId: order.orderId, status: order.status });
 }

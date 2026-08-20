@@ -17,25 +17,32 @@ export function generateOrderId(): string {
   return `MM-${n}`;
 }
 
-export function fullWhatsappNumber(): string {
-  return (BUSINESS.countryCode + BUSINESS.phone).replace(/\D/g, "");
+export function fullWhatsappNumber(contact?: { phone: string; countryCode: string }): string {
+  const c = contact || BUSINESS;
+  return (c.countryCode + c.phone).replace(/\D/g, "");
 }
 
-export function waLink(message: string = WHATSAPP_GREETING): string {
-  return `https://wa.me/${fullWhatsappNumber()}?text=${encodeURIComponent(message)}`;
+/** Pass `contact` (live business settings from useBusiness()) wherever available — falls back to the static config otherwise. */
+export function waLink(message: string = WHATSAPP_GREETING, contact?: { phone: string; countryCode: string }): string {
+  return `https://wa.me/${fullWhatsappNumber(contact)}?text=${encodeURIComponent(message)}`;
 }
 
-export function minOrderDate(): string {
+/** Pass `leadTimeDays` (live business settings from useBusiness()) wherever available — falls back to the static config otherwise. */
+export function minOrderDate(leadTimeDays?: number): string {
   const min = new Date();
-  min.setDate(min.getDate() + (BUSINESS.leadTimeDays || 0));
+  min.setDate(min.getDate() + (leadTimeDays ?? BUSINESS.leadTimeDays ?? 0));
   return min.toISOString().split("T")[0];
 }
 
-export function isDateAvailable(iso: string): boolean {
+/** Pass `config` (live business settings from useBusiness()) wherever available — falls back to the static config otherwise. */
+export function isDateAvailable(iso: string, config?: { leadTimeDays: number; blackoutDates: string[]; closedWeekdays: number[] }): boolean {
   if (!iso) return false;
-  if (iso < minOrderDate()) return false;
-  if (BUSINESS.blackoutDates.includes(iso)) return false;
+  const leadTimeDays = config?.leadTimeDays ?? BUSINESS.leadTimeDays;
+  const blackoutDates = config?.blackoutDates ?? BUSINESS.blackoutDates;
+  const closedWeekdays = config?.closedWeekdays ?? BUSINESS.closedWeekdays;
+  if (iso < minOrderDate(leadTimeDays)) return false;
+  if (blackoutDates.includes(iso)) return false;
   const day = new Date(iso + "T00:00:00").getDay();
-  if (BUSINESS.closedWeekdays.includes(day)) return false;
+  if (closedWeekdays.includes(day)) return false;
   return true;
 }

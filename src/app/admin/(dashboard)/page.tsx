@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BUSINESS } from "@/data/data";
+import DateRangePicker, { DateRangeValue } from "@/components/admin/DateRangePicker";
 
 interface Stats {
   totalOrders: number;
@@ -19,29 +20,25 @@ interface Stats {
   averageOrderValue: number;
 }
 
-const RANGES = [
-  { value: "today", label: "Today" },
-  { value: "yesterday", label: "Yesterday" },
-  { value: "7d", label: "Last 7 Days" },
-  { value: "30d", label: "Last 30 Days" },
-  { value: "all", label: "All Time" }
-];
-
 function formatINR(n: number) {
   return `${BUSINESS.currencySymbol}${n.toLocaleString("en-IN")}`;
 }
 
 export default function AdminDashboardPage() {
-  const [range, setRange] = useState("30d");
+  const [dateRange, setDateRange] = useState<DateRangeValue>({ range: "30d" });
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (dateRange.range === "custom" && (!dateRange.from || !dateRange.to)) return;
     let cancelled = false;
     Promise.resolve().then(() => {
       if (!cancelled) setLoading(true);
     });
-    fetch(`/api/admin/stats?range=${range}`)
+    const qs = new URLSearchParams({ range: dateRange.range });
+    if (dateRange.from) qs.set("from", dateRange.from);
+    if (dateRange.to) qs.set("to", dateRange.to);
+    fetch(`/api/admin/stats?${qs}`)
       .then((r) => r.json())
       .then((data) => {
         if (!cancelled) setStats(data);
@@ -52,7 +49,7 @@ export default function AdminDashboardPage() {
     return () => {
       cancelled = true;
     };
-  }, [range]);
+  }, [dateRange]);
 
   const cards = stats
     ? [
@@ -62,10 +59,10 @@ export default function AdminDashboardPage() {
         { label: "Confirmed", value: stats.confirmedOrders, href: "/admin/orders?status=confirmed" },
         { label: "Completed", value: stats.completedOrders, href: "/admin/orders?status=completed" },
         { label: "Cancelled", value: stats.cancelledOrders, href: "/admin/orders?status=cancelled" },
-        { label: "Customers", value: stats.totalCustomers, href: "/admin/orders" },
+        { label: "Customers", value: stats.totalCustomers, href: "/admin/customers" },
         { label: "Revenue Collected", value: formatINR(stats.totalRevenue), href: "/admin/orders", accent: true },
         { label: "Pending Payments", value: formatINR(stats.pendingPayments), href: "/admin/orders" },
-        { label: "Avg. Order Value", value: formatINR(stats.averageOrderValue), href: "/admin/orders" }
+        { label: "Avg. Order Value", value: formatINR(stats.averageOrderValue), href: "/admin/analytics" }
       ]
     : [];
 
@@ -73,23 +70,10 @@ export default function AdminDashboardPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-4 mb-7">
         <h1 className="text-[1.6rem]">Dashboard</h1>
-        <div className="flex flex-wrap gap-2">
-          {RANGES.map((r) => (
-            <button
-              key={r.value}
-              onClick={() => setRange(r.value)}
-              className={`px-3.5 py-1.5 rounded-full text-[0.82rem] font-medium border transition-colors ${
-                range === r.value ? "text-white" : "text-ink border-border bg-ivory"
-              }`}
-              style={range === r.value ? { background: "var(--gold-dark)", borderColor: "var(--gold-dark)" } : undefined}
-            >
-              {r.label}
-            </button>
-          ))}
-        </div>
+        <DateRangePicker value={dateRange} onChange={setDateRange} />
       </div>
 
-      {loading ? (
+      {loading || !stats ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {Array.from({ length: 10 }).map((_, i) => (
             <div key={i} className="card p-5 h-[92px] animate-pulse" />
@@ -106,7 +90,7 @@ export default function AdminDashboardPage() {
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-5 mt-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5 mt-8">
         <Link href="/admin/orders" className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
           <h3 className="text-[1.1rem] mb-1.5">Manage Orders</h3>
           <p className="text-text-muted text-[0.88rem] m-0">Review new orders, verify payments, and update order status.</p>
@@ -114,6 +98,14 @@ export default function AdminDashboardPage() {
         <Link href="/admin/products" className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
           <h3 className="text-[1.1rem] mb-1.5">Manage Products</h3>
           <p className="text-text-muted text-[0.88rem] m-0">Add cakes, update prices, and control what&apos;s visible on the site.</p>
+        </Link>
+        <Link href="/admin/analytics" className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
+          <h3 className="text-[1.1rem] mb-1.5">View Analytics</h3>
+          <p className="text-text-muted text-[0.88rem] m-0">Revenue trends, top products and category performance.</p>
+        </Link>
+        <Link href="/admin/customers" className="card p-6 hover:shadow-[0_6px_20px_rgba(64,51,42,0.08)] transition-shadow">
+          <h3 className="text-[1.1rem] mb-1.5">View Customers</h3>
+          <p className="text-text-muted text-[0.88rem] m-0">Order history, spending and notes for every customer.</p>
         </Link>
       </div>
     </div>
