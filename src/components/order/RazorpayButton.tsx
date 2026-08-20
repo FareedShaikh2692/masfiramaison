@@ -3,9 +3,14 @@
 import { useState } from "react";
 import { BUSINESS } from "@/data/data";
 
+interface RazorpayInstance {
+  open: () => void;
+  on: (event: string, handler: (response: unknown) => void) => void;
+}
+
 declare global {
   interface Window {
-    Razorpay: new (options: Record<string, unknown>) => { open: () => void };
+    Razorpay: new (options: Record<string, unknown>) => RazorpayInstance;
   }
 }
 
@@ -82,6 +87,13 @@ export default function RazorpayButton({
         },
         modal: { ondismiss: () => setLoading(false) }
       });
+
+      rzp.on("payment.failed", (response: unknown) => {
+        const description = (response as { error?: { description?: string } })?.error?.description;
+        setError(description || "Payment failed. Please try again or use another method.");
+        setLoading(false);
+      });
+
       rzp.open();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
