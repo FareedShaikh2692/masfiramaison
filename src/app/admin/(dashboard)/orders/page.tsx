@@ -7,6 +7,11 @@ import type { OrderRecord } from "@/lib/types";
 import { ORDER_STATUS_LABEL } from "@/lib/types";
 import { formatDate } from "@/lib/format";
 import SortableTh from "@/components/admin/SortableTh";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge, { type BadgeTone } from "@/components/admin/StatusBadge";
+import EmptyState from "@/components/admin/EmptyState";
+import { TableSkeleton } from "@/components/admin/Skeleton";
+import { ShoppingBag } from "lucide-react";
 
 const STATUS_OPTIONS = ["all", ...Object.keys(ORDER_STATUS_LABEL)];
 
@@ -63,7 +68,7 @@ function OrdersList() {
 
   return (
     <div>
-      <h1 className="text-[1.6rem] mb-6">Orders</h1>
+      <PageHeader title="Orders" description="Review new orders, verify payments, and update order status." />
 
       <div className="flex flex-wrap gap-3 mb-6">
         <input
@@ -85,13 +90,9 @@ function OrdersList() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="card h-14 animate-pulse" />
-          ))}
-        </div>
+        <TableSkeleton />
       ) : orders.length === 0 ? (
-        <div className="card p-12 text-center text-text-muted">No orders match your search.</div>
+        <EmptyState icon={ShoppingBag} title="No Orders Yet" description="Your orders will appear here when customers place their first order." />
       ) : (
         <>
           <div className="sm:hidden space-y-3">
@@ -103,9 +104,7 @@ function OrdersList() {
               >
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <span className="font-semibold text-gold-dark">{o.orderId}</span>
-                  <span className="text-[0.72rem] px-2.5 py-1 rounded-full font-medium text-white" style={{ background: statusColor(o.status) }}>
-                    {ORDER_STATUS_LABEL[o.status]}
-                  </span>
+                  <StatusBadge label={ORDER_STATUS_LABEL[o.status]} tone={statusTone(o.status)} />
                 </div>
                 <div className="text-ink font-medium">{o.fullName}</div>
                 <div className="text-text-muted text-[0.8rem] mb-2">{o.phone} · {o.productName}</div>
@@ -145,9 +144,7 @@ function OrdersList() {
                     <td className="px-5 py-3 text-text-muted">{formatDate(o.preferredDate)}</td>
                     <td className="px-5 py-3 text-ink">{o.total != null ? `₹${o.total}` : "—"}</td>
                     <td className="px-5 py-3">
-                      <span className="text-[0.72rem] px-2.5 py-1 rounded-full font-medium text-white" style={{ background: statusColor(o.status) }}>
-                        {ORDER_STATUS_LABEL[o.status]}
-                      </span>
+                      <StatusBadge label={ORDER_STATUS_LABEL[o.status]} tone={statusTone(o.status)} />
                     </td>
                   </tr>
                 ))}
@@ -180,18 +177,18 @@ function OrdersList() {
   );
 }
 
-function statusColor(status: string): string {
+function statusTone(status: string): BadgeTone {
   switch (status) {
     case "confirmed":
     case "preparing":
     case "ready":
-      return "var(--gold-dark)";
+      return "gold";
     case "completed":
-      return "#5A7D5A";
+      return "success";
     case "cancelled":
-      return "var(--danger)";
+      return "danger";
     default:
-      return "#9A8C7A";
+      return "neutral";
   }
 }
 

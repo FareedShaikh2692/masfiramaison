@@ -7,22 +7,27 @@ import type { OrderRecord, PaymentStatus } from "@/lib/types";
 import { PAYMENT_STATUS_LABEL } from "@/lib/types";
 import { formatDate } from "@/lib/format";
 import SortableTh from "@/components/admin/SortableTh";
+import PageHeader from "@/components/admin/PageHeader";
+import StatusBadge, { type BadgeTone } from "@/components/admin/StatusBadge";
+import EmptyState from "@/components/admin/EmptyState";
+import { TableSkeleton } from "@/components/admin/Skeleton";
+import { CreditCard } from "lucide-react";
 
 const PAYMENT_STATUS_OPTIONS = ["all", ...Object.keys(PAYMENT_STATUS_LABEL)];
 
 type SortKey = "preferredDate" | "total" | "advancePaid";
 
-function paymentStatusColor(status: PaymentStatus): string {
+function paymentStatusTone(status: PaymentStatus): BadgeTone {
   switch (status) {
     case "paid":
-      return "#5A7D5A";
+      return "success";
     case "partially_paid":
-      return "var(--gold-dark)";
+      return "gold";
     case "failed":
     case "refunded":
-      return "var(--danger)";
+      return "danger";
     default:
-      return "#9A8C7A";
+      return "neutral";
   }
 }
 
@@ -78,7 +83,7 @@ function PaymentsList() {
 
   return (
     <div>
-      <h1 className="text-[1.6rem] mb-6">Payments</h1>
+      <PageHeader title="Payments" description="Track payment status and balances across all orders." />
 
       <div className="flex flex-wrap gap-3 mb-6">
         <input
@@ -100,13 +105,9 @@ function PaymentsList() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="card h-14 animate-pulse" />
-          ))}
-        </div>
+        <TableSkeleton />
       ) : orders.length === 0 ? (
-        <div className="card p-12 text-center text-text-muted">No orders match your search.</div>
+        <EmptyState icon={CreditCard} title="No Payments Yet" description="Payment activity will appear here once customers start ordering." />
       ) : (
         <>
           <div className="sm:hidden space-y-3">
@@ -117,9 +118,7 @@ function PaymentsList() {
                 <div key={o.orderId} className="card p-4 cursor-pointer" onClick={() => router.push(`/admin/orders/${o.orderId}`)}>
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <span className="font-semibold text-gold-dark">{o.orderId}</span>
-                    <span className="text-[0.72rem] px-2.5 py-1 rounded-full font-medium text-white" style={{ background: paymentStatusColor(status) }}>
-                      {PAYMENT_STATUS_LABEL[status]}
-                    </span>
+                    <StatusBadge label={PAYMENT_STATUS_LABEL[status]} tone={paymentStatusTone(status)} />
                   </div>
                   <div className="text-ink font-medium">{o.fullName}</div>
                   <div className="text-text-muted text-[0.8rem] mb-2">{o.phone} · {formatDate(o.preferredDate)}</div>
@@ -167,9 +166,7 @@ function PaymentsList() {
                       <td className="px-5 py-3 text-ink">{balance != null ? `₹${balance}` : "—"}</td>
                       <td className="px-5 py-3 text-text-muted capitalize">{o.paymentMethod || "—"}</td>
                       <td className="px-5 py-3">
-                        <span className="text-[0.72rem] px-2.5 py-1 rounded-full font-medium text-white" style={{ background: paymentStatusColor(status) }}>
-                          {PAYMENT_STATUS_LABEL[status]}
-                        </span>
+                        <StatusBadge label={PAYMENT_STATUS_LABEL[status]} tone={paymentStatusTone(status)} />
                       </td>
                     </tr>
                   );

@@ -6,6 +6,10 @@ import ProductForm, { ProductFormValue, blankProductForm, productToForm } from "
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { useToast } from "@/components/admin/Toast";
 import SortableTh from "@/components/admin/SortableTh";
+import PageHeader from "@/components/admin/PageHeader";
+import EmptyState from "@/components/admin/EmptyState";
+import { TableSkeleton } from "@/components/admin/Skeleton";
+import { Cake } from "lucide-react";
 
 type SortKey = "name" | "price";
 
@@ -146,12 +150,15 @@ export default function AdminProductsPage() {
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-        <h1 className="text-[1.6rem]">Products</h1>
-        <button onClick={openCreate} className="btn btn-primary btn-sm">
-          + Add Product
-        </button>
-      </div>
+      <PageHeader
+        title="Products"
+        description="Manage your cakes, flavors, sizes and pricing."
+        actions={
+          <button onClick={openCreate} className="btn btn-primary btn-sm">
+            + Add Product
+          </button>
+        }
+      />
 
       <div className="flex flex-wrap gap-3 mb-6">
         <input
@@ -176,20 +183,20 @@ export default function AdminProductsPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="card h-16 animate-pulse" />
-          ))}
-        </div>
+        <TableSkeleton />
       ) : filtered.length === 0 ? (
-        <div className="card p-12 text-center">
-          <p className="text-text-muted mb-4">{products.length === 0 ? "No products yet." : "No products match your filters."}</p>
-          {products.length === 0 && (
-            <button onClick={openCreate} className="btn btn-primary btn-sm">
-              Add Your First Product
-            </button>
-          )}
-        </div>
+        <EmptyState
+          icon={Cake}
+          title={products.length === 0 ? "No Products Yet" : "No Matches"}
+          description={products.length === 0 ? "Add your first cake to start building the menu." : "No products match your filters."}
+          action={
+            products.length === 0 && (
+              <button onClick={openCreate} className="btn btn-primary btn-sm">
+                Add Your First Product
+              </button>
+            )
+          }
+        />
       ) : (
         <>
           <div className="sm:hidden space-y-3">

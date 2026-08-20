@@ -5,6 +5,11 @@ import Link from "next/link";
 import { BUSINESS } from "@/data/data";
 import { formatDate } from "@/lib/format";
 import SortableTh from "@/components/admin/SortableTh";
+import PageHeader from "@/components/admin/PageHeader";
+import EmptyState from "@/components/admin/EmptyState";
+import { TableSkeleton } from "@/components/admin/Skeleton";
+import StatusBadge, { type BadgeTone } from "@/components/admin/StatusBadge";
+import { Users } from "lucide-react";
 
 interface CustomerSummary {
   phone: string;
@@ -17,7 +22,7 @@ interface CustomerSummary {
   status: "active" | "new" | "lapsed";
 }
 
-const STATUS_COLOR: Record<string, string> = { active: "var(--gold-dark)", new: "#5A7D5A", lapsed: "#9A8C7A" };
+const STATUS_TONE: Record<string, BadgeTone> = { active: "gold", new: "success", lapsed: "neutral" };
 
 type SortKey = "name" | "totalOrders" | "totalSpent" | "lastOrderDate";
 
@@ -62,7 +67,7 @@ export default function AdminCustomersPage() {
 
   return (
     <div>
-      <h1 className="text-[1.6rem] mb-6">Customers</h1>
+      <PageHeader title="Customers" description="Order history, spending and notes for every customer." />
 
       <div className="flex flex-wrap gap-3 mb-6">
         <input className="field-input max-w-[260px]" placeholder="Search name or phone…" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -75,13 +80,13 @@ export default function AdminCustomersPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="card h-14 animate-pulse" />
-          ))}
-        </div>
+        <TableSkeleton />
       ) : filtered.length === 0 ? (
-        <div className="card p-12 text-center text-text-muted">{customers.length === 0 ? "No customers yet — they'll show up here after the first order." : "No customers match your search."}</div>
+        <EmptyState
+          icon={Users}
+          title={customers.length === 0 ? "No Customers Yet" : "No Matches"}
+          description={customers.length === 0 ? "Customers will show up here after their first order." : "No customers match your search."}
+        />
       ) : (
         <>
           <div className="sm:hidden space-y-3">
@@ -89,9 +94,7 @@ export default function AdminCustomersPage() {
               <Link key={c.phone} href={`/admin/customers/${encodeURIComponent(c.phone)}`} className="card p-4 block">
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <span className="font-medium text-ink">{c.name}</span>
-                  <span className="text-[0.72rem] px-2.5 py-1 rounded-full font-medium text-white capitalize flex-shrink-0" style={{ background: STATUS_COLOR[c.status] }}>
-                    {c.status}
-                  </span>
+                  <span className="flex-shrink-0"><StatusBadge label={c.status} tone={STATUS_TONE[c.status]} /></span>
                 </div>
                 <div className="text-text-muted text-[0.8rem] mb-2">{c.phone}</div>
                 <div className="flex items-center justify-between text-[0.85rem]">
@@ -127,9 +130,7 @@ export default function AdminCustomersPage() {
                     <td className="px-5 py-3 text-ink">{BUSINESS.currencySymbol}{c.totalSpent.toLocaleString("en-IN")}</td>
                     <td className="px-5 py-3 text-text-muted">{formatDate(c.lastOrderDate.slice(0, 10))}</td>
                     <td className="px-5 py-3">
-                      <span className="text-[0.72rem] px-2.5 py-1 rounded-full font-medium text-white capitalize" style={{ background: STATUS_COLOR[c.status] }}>
-                        {c.status}
-                      </span>
+                      <StatusBadge label={c.status} tone={STATUS_TONE[c.status]} />
                     </td>
                   </tr>
                 ))}
