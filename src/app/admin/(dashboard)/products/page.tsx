@@ -40,6 +40,22 @@ export default function AdminProductsPage() {
   const [form, setForm] = useState<ProductFormValue>(blankProductForm());
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<ProductRecord | null>(null);
+  const [seeding, setSeeding] = useState(false);
+
+  async function loadStarterMenu() {
+    setSeeding(true);
+    try {
+      const res = await fetch("/api/admin/seed-catalog", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not load the starter menu.");
+      showToast(`Loaded ${data.categories} categories, ${data.products} products, ${data.flavors} flavors.`);
+      load();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : "Something went wrong.", "error");
+    } finally {
+      setSeeding(false);
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -188,12 +204,17 @@ export default function AdminProductsPage() {
         <EmptyState
           icon={Cake}
           title={products.length === 0 ? "No Products Yet" : "No Matches"}
-          description={products.length === 0 ? "Add your first cake to start building the menu." : "No products match your filters."}
+          description={products.length === 0 ? "Add your first cake, or load Masfira Maison's original starter menu to get going instantly." : "No products match your filters."}
           action={
             products.length === 0 && (
-              <button onClick={openCreate} className="btn btn-primary btn-sm">
-                Add Your First Product
-              </button>
+              <div className="flex flex-wrap justify-center gap-2.5">
+                <button onClick={openCreate} className="btn btn-primary btn-sm">
+                  Add Your First Product
+                </button>
+                <button onClick={loadStarterMenu} disabled={seeding} className="btn btn-outline btn-sm">
+                  {seeding ? "Loading…" : "Load Starter Menu"}
+                </button>
+              </div>
             )
           }
         />
