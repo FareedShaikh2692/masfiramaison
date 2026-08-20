@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const day = o.createdAt.slice(0, 10);
     const entry = byDay.get(day) || { revenue: 0, orders: 0 };
     entry.orders += 1;
-    entry.revenue += o.advancePaid || 0;
+    if (["confirmed", "preparing", "ready", "completed"].includes(o.status)) entry.revenue += o.advancePaid || 0;
     byDay.set(day, entry);
   }
   const series = [...byDay.entries()]
@@ -53,9 +53,14 @@ export async function GET(req: NextRequest) {
     .map(([name, v]) => ({ name, ...v }))
     .sort((a, b) => b.revenue - a.revenue);
 
+  // Match the Dashboard's definition of revenue: only orders confirmed or further
+  // along count, and cancelled orders (even ones that briefly held an advance
+  // payment) are excluded from both revenue and the average order value.
   const totalOrders = filtered.length;
-  const totalRevenue = filtered.reduce((sum, o) => sum + (o.advancePaid || 0), 0);
-  const avgOrderValue = totalOrders ? Math.round(filtered.reduce((s, o) => s + (o.total || 0), 0) / totalOrders) : 0;
+  const confirmedLike = filtered.filter((o) => ["confirmed", "preparing", "ready", "completed"].includes(o.status));
+  const totalRevenue = confirmedLike.reduce((sum, o) => sum + (o.advancePaid || 0), 0);
+  const valuedOrders = filtered.filter((o) => o.status !== "cancelled" && o.total != null);
+  const avgOrderValue = valuedOrders.length ? Math.round(valuedOrders.reduce((s, o) => s + (o.total || 0), 0) / valuedOrders.length) : 0;
 
   return NextResponse.json({
     series,

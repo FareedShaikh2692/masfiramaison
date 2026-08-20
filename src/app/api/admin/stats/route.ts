@@ -13,11 +13,19 @@ export async function GET(req: NextRequest) {
 
   const confirmedLike = filtered.filter((o) => ["confirmed", "preparing", "ready", "completed"].includes(o.status));
   const totalRevenue = confirmedLike.reduce((sum, o) => sum + (o.advancePaid || 0), 0);
+
+  // Orders in payment_verification already have a screenshot-submitted advancePaid
+  // recorded (see /api/orders/[id]/payment) — only the *remaining* balance is
+  // actually still outstanding, not the full order total.
   const pendingPayments = filtered
     .filter((o) => ["pending", "payment_pending", "payment_verification"].includes(o.status))
-    .reduce((sum, o) => sum + (o.total || 0), 0);
+    .reduce((sum, o) => sum + Math.max((o.total || 0) - (o.advancePaid || 0), 0), 0);
 
   const uniqueCustomers = new Set(filtered.map((o) => o.phone)).size;
+
+  // Cancelled orders never resulted in revenue — excluding them keeps "average
+  // order value" a meaningful figure rather than diluted by orders that fell through.
+  const valuedOrders = filtered.filter((o) => o.status !== "cancelled" && o.total != null);
 
   return NextResponse.json({
     totalOrders: filtered.length,
@@ -31,6 +39,6 @@ export async function GET(req: NextRequest) {
     totalCustomers: uniqueCustomers,
     totalRevenue,
     pendingPayments,
-    averageOrderValue: filtered.length ? Math.round(filtered.reduce((s, o) => s + (o.total || 0), 0) / filtered.length) : 0
+    averageOrderValue: valuedOrders.length ? Math.round(valuedOrders.reduce((s, o) => s + (o.total || 0), 0) / valuedOrders.length) : 0
   });
 }

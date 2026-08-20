@@ -19,7 +19,7 @@ export default function AdminTopbar({
   onToggleCollapsed: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-40 flex items-center gap-4 px-5 md:px-8 py-3.5 border-b border-border" style={{ background: "rgba(255,253,249,0.92)", backdropFilter: "blur(8px)" }}>
+    <header className="sticky top-0 z-40 flex items-center gap-4 h-[73px] flex-shrink-0 px-5 md:px-8 border-b border-border" style={{ background: "rgba(255,253,249,0.92)", backdropFilter: "blur(8px)" }}>
       <button onClick={onMenuClick} aria-label="Open menu" className="md:hidden w-9 h-9 flex items-center justify-center flex-shrink-0">
         <Menu size={20} className="text-ink" />
       </button>
