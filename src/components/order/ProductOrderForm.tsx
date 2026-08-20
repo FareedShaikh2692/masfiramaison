@@ -11,6 +11,7 @@ import type { OrderPrefill } from "@/components/order/OrderContext";
 import { useBusiness } from "@/components/BusinessContext";
 import type { DeliveryZoneRecord } from "@/lib/deliveryStore";
 import CustomSelect from "@/components/CustomSelect";
+import DatePicker from "@/components/DatePicker";
 
 const EMPTY_PRODUCT: Product = { id: "", name: "", category: "", description: "", image: "", price: null, fields: [] };
 
@@ -515,7 +516,13 @@ export default function ProductOrderForm({
 
       <FormSection title="Date & Time">
         <Field label="Preferred Date" error={errors.preferredDate}>
-          <input className="field-input" type="date" min={minDate} value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} />
+          <DatePicker
+            value={preferredDate}
+            onChange={setPreferredDate}
+            minDate={minDate}
+            isDateDisabled={(iso) => !isDateAvailable(iso, business)}
+            error={errors.preferredDate}
+          />
         </Field>
         <Field label="Preferred Time Slot" error={errors.pickupSlot}>
           <div className="flex flex-col gap-2.5">

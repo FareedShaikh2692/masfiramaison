@@ -6,6 +6,7 @@ import { minOrderDate, isDateAvailable } from "@/lib/format";
 import TermsCheckbox from "@/components/order/TermsCheckbox";
 import { useBusiness } from "@/components/BusinessContext";
 import CustomSelect from "@/components/CustomSelect";
+import DatePicker from "@/components/DatePicker";
 
 export interface CustomOrderSnapshot {
   orderId: string;
@@ -199,7 +200,13 @@ export default function CustomCakeForm({ onOrderCreated }: { onOrderCreated: (s:
         </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Preferred Date" error={errors.preferredDate}>
-            <input className="field-input" type="date" min={minOrderDate(business.leadTimeDays)} value={preferredDate} onChange={(e) => setPreferredDate(e.target.value)} />
+            <DatePicker
+              value={preferredDate}
+              onChange={setPreferredDate}
+              minDate={minOrderDate(business.leadTimeDays)}
+              isDateDisabled={(iso) => !isDateAvailable(iso, business)}
+              error={errors.preferredDate}
+            />
           </Field>
           <Field label="Preferred Time" error={errors.preferredTime}>
             <input className="field-input" type="time" value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} />
