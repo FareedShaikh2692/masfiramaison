@@ -3,6 +3,9 @@ import { saveOrder, saveUploadedImage } from "@/lib/orderStore";
 import { generateOrderId } from "@/lib/format";
 import { createNotification } from "@/lib/notificationStore";
 import { incrementCouponUsage } from "@/lib/couponStore";
+import { getBusinessSettings } from "@/lib/settingsStore";
+import { sendInvoiceEmail } from "@/lib/email";
+import { notifyAdminOfNewOrder } from "@/lib/whatsapp";
 import type { OrderRecord } from "@/lib/types";
 
 export async function POST(req: NextRequest) {
@@ -87,6 +90,19 @@ export async function POST(req: NextRequest) {
           orderId: order.orderId
         }
   );
+
+  // Best-effort — a failed email/WhatsApp send should never block the order itself.
+  try {
+    const business = await getBusinessSettings();
+    await sendInvoiceEmail(order, business);
+  } catch (err) {
+    console.error("Failed to send invoice email:", err);
+  }
+  try {
+    await notifyAdminOfNewOrder(order);
+  } catch (err) {
+    console.error("Failed to send WhatsApp order notification:", err);
+  }
 
   return NextResponse.json({ orderId: order.orderId, status: order.status });
 }
