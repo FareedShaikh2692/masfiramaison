@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
 
   let referenceImage: string | null = null;
   if (typeof body.referenceImage === "string" && body.referenceImage.startsWith("data:image")) {
-    referenceImage = await saveUploadedImage(body.referenceImage, "reference");
+    referenceImage = await saveUploadedImage(body.referenceImage);
   }
 
   const now = new Date().toISOString();

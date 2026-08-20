@@ -16,11 +16,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "A payment screenshot is required for online payment methods." }, { status: 400 });
   }
 
-  let filename: string | null = null;
+  let screenshot: string | null = null;
   if (!isCash) {
-    filename = await saveUploadedImage(body.paymentScreenshot, "payment");
-    if (!filename) {
-      return NextResponse.json({ error: "Could not read payment screenshot." }, { status: 400 });
+    screenshot = await saveUploadedImage(body.paymentScreenshot);
+    if (!screenshot) {
+      return NextResponse.json({ error: "Could not read payment screenshot — it may be too large or an unsupported format." }, { status: 400 });
     }
   }
 
@@ -40,7 +40,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const updated = await updateOrder(id, {
     paymentMethod: body.paymentMethod,
-    paymentScreenshot: filename,
+    paymentScreenshot: screenshot,
     advancePaid,
     balanceDue,
     status
