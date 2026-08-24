@@ -1,4 +1,5 @@
 import { WHY_US } from "@/data/data";
+import Reveal from "@/components/Reveal";
 
 const ICONS: Record<string, React.ReactNode> = {
   sparkle: (
@@ -22,13 +23,13 @@ export default function WhyUs() {
   return (
     <section id="why" className="py-28" style={{ background: "var(--ivory)" }}>
       <div className="container-app">
-        <div className="text-center max-w-[680px] mx-auto mb-14">
+        <Reveal className="text-center max-w-[680px] mx-auto mb-14">
           <span className="eyebrow justify-center">Our Promise</span>
           <h2 className="text-[clamp(2rem,3.6vw,2.9rem)] mt-3.5">Why Masfira Maison?</h2>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
+        </Reveal>
+        <Reveal delay={0.1} className="grid grid-cols-2 lg:grid-cols-5 gap-6">
           {WHY_US.map((item) => (
-            <div key={item.title} className="text-center p-8 card hover:shadow-[0_6px_20px_rgba(64,51,42,0.06)] hover:-translate-y-1 transition-all duration-300">
+            <div key={item.title} className="text-center p-8 card hover:shadow-[0_20px_45px_rgba(64,51,42,0.10)] hover:-translate-y-2 transition-all duration-500 ease-out">
               <div className="w-16 h-16 mx-auto mb-4.5 rounded-full flex items-center justify-center text-gold-dark" style={{ background: "var(--blush-soft)" }}>
                 <span className="w-7 h-7 block">{ICONS[item.icon]}</span>
               </div>
@@ -36,7 +37,7 @@ export default function WhyUs() {
               <p className="text-[0.88rem] text-text-muted m-0">{item.text}</p>
             </div>
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );

@@ -1,5 +1,6 @@
 import { listProducts } from "@/lib/catalogStore";
 import ProductCard from "@/components/ProductCard";
+import Reveal from "@/components/Reveal";
 
 export default async function MaisonSpecials() {
   const products = await listProducts({ activeOnly: true });
@@ -14,7 +15,7 @@ export default async function MaisonSpecials() {
       style={{ background: "radial-gradient(circle at 50% 0%, rgba(198,161,91,0.12), transparent 55%), var(--ink)" }}
     >
       <div className="container-app">
-        <div className="text-center max-w-[680px] mx-auto mb-14">
+        <Reveal className="text-center max-w-[680px] mx-auto mb-14">
           <span className="eyebrow justify-center" style={{ color: "var(--gold-light)" }}>
             Signature Shelf
           </span>
@@ -22,12 +23,12 @@ export default async function MaisonSpecials() {
           <p className="mt-4 text-[1.08rem] text-white/70">
             Our most distinctive creations — richer flavors, limited to those who ask for something a little extraordinary.
           </p>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        </Reveal>
+        <Reveal delay={0.1} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {specials.map((product) => (
             <ProductCard key={product.id} product={product} featured />
           ))}
-        </div>
+        </Reveal>
       </div>
     </section>
   );

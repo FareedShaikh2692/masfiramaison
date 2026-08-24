@@ -2,6 +2,7 @@ import Image from "next/image";
 import { getPublishedReviews } from "@/lib/reviewStore";
 import { getReviewSettings } from "@/lib/settingsStore";
 import WriteReviewButton from "@/components/review/WriteReviewButton";
+import Reveal from "@/components/Reveal";
 
 export default async function Testimonials() {
   const [settings, reviews] = await Promise.all([getReviewSettings(), getPublishedReviews()]);
@@ -10,11 +11,11 @@ export default async function Testimonials() {
   return (
     <section id="testimonials" className="py-28" style={{ background: "var(--ivory)" }}>
       <div className="container-app">
-        <div className="text-center max-w-[680px] mx-auto mb-10">
+        <Reveal className="text-center max-w-[680px] mx-auto mb-10">
           <span className="eyebrow justify-center">Kind Words</span>
           <h2 className="text-[clamp(2rem,3.6vw,2.9rem)] mt-3.5">Love Your Masfira Maison Experience? 💕</h2>
           <p className="mt-4 text-[1.08rem] text-text-muted">Share your cake, your experience and a little love with us!</p>
-        </div>
+        </Reveal>
 
         <div className="flex justify-center mb-12">
           <WriteReviewButton />
@@ -26,9 +27,9 @@ export default async function Testimonials() {
             <p className="text-text-muted m-0">We&apos;re just getting started collecting feedback — real customer reviews will appear here as they come in.</p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
+          <Reveal delay={0.1} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-7">
             {reviews.slice(0, 9).map((r) => (
-              <div key={r.id} className="card p-8">
+              <div key={r.id} className="card p-8 transition-all duration-500 ease-out hover:-translate-y-2 hover:shadow-[0_24px_60px_rgba(64,51,42,0.12)]">
                 <div className="text-gold tracking-[3px] mb-3.5">{"★".repeat(r.rating)}{"☆".repeat(5 - r.rating)}</div>
                 <p className="italic mb-4.5">&ldquo;{r.reviewText}&rdquo;</p>
                 {settings.showPhotosPublicly && r.images.length > 0 && (
@@ -54,7 +55,7 @@ export default async function Testimonials() {
                 )}
               </div>
             ))}
-          </div>
+          </Reveal>
         )}
       </div>
     </section>

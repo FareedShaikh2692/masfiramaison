@@ -1,16 +1,23 @@
 "use client";
 
 import Image from "next/image";
+import { motion, useReducedMotion } from "framer-motion";
 import { useOrder } from "@/components/order/OrderContext";
 import type { HeroBanner } from "@/lib/contentStore";
 
 export default function Hero({ banner }: { banner: HeroBanner }) {
   const { openProductOrder } = useOrder();
+  const reduceMotion = useReducedMotion();
 
   return (
     <section id="home" className="min-h-screen flex items-center pt-[84px] relative overflow-hidden" style={{ background: "linear-gradient(180deg, var(--ivory) 0%, var(--cream) 100%)" }}>
       <div className="container-app grid lg:grid-cols-[1.05fr_0.95fr] gap-14 items-center py-16">
-        <div className="text-center lg:text-left">
+        <motion.div
+          className="text-center lg:text-left"
+          initial={reduceMotion ? undefined : { opacity: 0, y: 20 }}
+          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        >
           <span className="eyebrow justify-center lg:justify-start">Premium Homemade Bakery</span>
           <h1 className="text-[clamp(2.4rem,5vw,4rem)] leading-[1.15] mt-5 mb-5">{banner.heading}</h1>
           <p className="text-[1.1rem] text-text-muted max-w-[520px] mx-auto lg:mx-0 mb-8">{banner.description}</p>
@@ -33,17 +40,35 @@ export default function Hero({ banner }: { banner: HeroBanner }) {
             <span className="inline-flex items-center gap-2"><i className="w-[5px] h-[5px] rounded-full bg-gold" />Homemade</span>
             <span className="inline-flex items-center gap-2"><i className="w-[5px] h-[5px] rounded-full bg-gold" />Made to Order</span>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="relative flex justify-center order-first lg:order-last">
-          <div className="relative w-[min(480px,90%)] rounded-[28px] overflow-hidden shadow-[0_30px_80px_rgba(64,51,42,0.16)] bg-ivory border border-border">
+        <motion.div
+          className="relative flex justify-center order-first lg:order-last"
+          initial={reduceMotion ? undefined : { opacity: 0, y: 30, scale: 0.96 }}
+          animate={reduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+        >
+          {/* Ambient glow behind the image — soft, static; keeps depth without motion */}
+          <div
+            className="absolute w-[85%] aspect-square rounded-full blur-3xl opacity-60 -z-10"
+            style={{ background: "radial-gradient(circle, rgba(198,161,91,0.35), transparent 70%)" }}
+          />
+          <motion.div
+            className="relative w-[min(480px,90%)] rounded-[28px] overflow-hidden shadow-[0_30px_80px_rgba(64,51,42,0.16)] bg-ivory border border-border"
+            animate={reduceMotion ? undefined : { y: [0, -14, 0] }}
+            transition={reduceMotion ? undefined : { duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          >
             <Image src={banner.image} alt="Elegant handcrafted celebration cake by Masfira Maison" width={600} height={600} priority className="w-full aspect-square object-cover" />
-          </div>
-          <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:-left-5 bg-white rounded-[18px] px-5 py-4 shadow-[0_20px_50px_rgba(64,51,42,0.10)] flex items-center gap-3 max-w-[240px]">
+          </motion.div>
+          <motion.div
+            className="absolute -bottom-5 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:-left-5 bg-white rounded-[18px] px-5 py-4 shadow-[0_20px_50px_rgba(64,51,42,0.10)] flex items-center gap-3 max-w-[240px]"
+            animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
+            transition={reduceMotion ? undefined : { duration: 5, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+          >
             <strong className="font-serif text-[1.05rem] text-ink">100%</strong>
             <span className="text-[0.8rem] text-text-muted">Homemade &amp; Made to Order</span>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
     </section>
   );

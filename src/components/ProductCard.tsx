@@ -11,7 +11,7 @@ export default function ProductCard({ product, featured = false }: { product: Pr
 
   return (
     <article
-      className={`card overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(64,51,42,0.10)] ${
+      className={`group card overflow-hidden flex flex-col transition-all duration-500 ease-out hover:-translate-y-3 hover:shadow-[0_30px_70px_rgba(64,51,42,0.16)] ${
         featured ? "ring-1 ring-gold-light" : ""
       }`}
     >
@@ -21,7 +21,14 @@ export default function ProductCard({ product, featured = false }: { product: Pr
             {product.badge}
           </span>
         )}
-        <Image src={product.image} alt={`${product.name} — ${business.name}`} fill sizes="(max-width: 768px) 100vw, 320px" className="object-cover" />
+        <Image
+          src={product.image}
+          alt={`${product.name} — ${business.name}`}
+          fill
+          sizes="(max-width: 768px) 100vw, 320px"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/15 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       </div>
       <div className="p-6 flex flex-col gap-3 flex-1">
         <h3 className="text-[1.28rem]">{product.name}</h3>

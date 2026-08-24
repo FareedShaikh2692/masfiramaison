@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import Image from "next/image";
 import { GALLERY } from "@/data/data";
+import Reveal from "@/components/Reveal";
 
 export default function Gallery() {
   const categories = useMemo(() => ["All", ...Array.from(new Set(GALLERY.map((g) => g.category)))], []);
@@ -25,11 +26,11 @@ export default function Gallery() {
   return (
     <section id="gallery" className="py-28">
       <div className="container-app">
-        <div className="text-center max-w-[680px] mx-auto mb-10">
+        <Reveal className="text-center max-w-[680px] mx-auto mb-10">
           <span className="eyebrow justify-center">Our Creations</span>
           <h2 className="text-[clamp(2rem,3.6vw,2.9rem)] mt-3.5">Gallery</h2>
           <p className="mt-4 text-[1.08rem] text-text-muted">Placeholder illustrations for now — real Masfira Maison photography coming soon.</p>
-        </div>
+        </Reveal>
 
         <div className="flex flex-wrap justify-center gap-2.5 mb-9">
           {categories.map((c) => (
@@ -46,12 +47,12 @@ export default function Gallery() {
           ))}
         </div>
 
-        <div className="columns-2 md:columns-3 lg:columns-4 gap-5 [column-fill:_balance]">
+        <Reveal delay={0.1} className="columns-2 md:columns-3 lg:columns-4 gap-5 [column-fill:_balance]">
           {filtered.map((item, idx) => (
             <button
               key={item.id}
               onClick={() => setLightboxIdx(idx)}
-              className="block w-full mb-5 rounded-[18px] overflow-hidden relative group break-inside-avoid shadow-[0_6px_20px_rgba(64,51,42,0.06)]"
+              className="block w-full mb-5 rounded-[18px] overflow-hidden relative group break-inside-avoid shadow-[0_6px_20px_rgba(64,51,42,0.06)] transition-all duration-500 ease-out hover:-translate-y-1.5 hover:shadow-[0_24px_50px_rgba(64,51,42,0.16)]"
             >
               <Image src={item.image} alt={item.alt} width={400} height={400} className="w-full transition-transform duration-500 group-hover:scale-105" />
               <span className="absolute inset-0 flex items-end p-4 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: "linear-gradient(180deg, rgba(64,51,42,0) 55%, rgba(64,51,42,0.7) 100%)" }}>
@@ -59,7 +60,7 @@ export default function Gallery() {
               </span>
             </button>
           ))}
-        </div>
+        </Reveal>
       </div>
 
       {lightboxIdx !== null && filtered[lightboxIdx] && (
