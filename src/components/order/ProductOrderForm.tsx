@@ -74,6 +74,7 @@ export default function ProductOrderForm({
   const [occasion, setOccasion] = useState("");
   const [addOns, setAddOns] = useState<string[]>([]);
   const [specialInstructions, setSpecialInstructions] = useState("");
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [fulfillment, setFulfillment] = useState<FulfillmentType>("pickup");
   const [deliveryAreaId, setDeliveryAreaId] = useState("");
   const [address, setAddress] = useState("");
@@ -185,6 +186,13 @@ export default function ProductOrderForm({
     setAddOns((prev) => (prev.includes(name) ? prev.filter((a) => a !== name) : [...prev, name]));
   }
 
+  function handleReferenceImageFile(file: File | undefined) {
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => setReferenceImage(e.target?.result as string);
+    reader.readAsDataURL(file);
+  }
+
   function validate(): boolean {
     const next: Record<string, boolean> = {};
     if (!fullName.trim()) next.fullName = true;
@@ -233,6 +241,7 @@ export default function ProductOrderForm({
       occasion,
       addOns,
       specialInstructions: product.fields.includes("specialInstructions") ? specialInstructions : undefined,
+      referenceImage: referenceImage || undefined,
       fulfillment,
       deliveryAreaId: fulfillment === "delivery" ? deliveryAreaId : undefined,
       address: fulfillment === "delivery" ? [address, city, postalCode].filter(Boolean).join(", ") : undefined,
@@ -466,6 +475,36 @@ export default function ProductOrderForm({
             <textarea className="field-input min-h-[90px]" value={specialInstructions} onChange={(e) => setSpecialInstructions(e.target.value)} placeholder="Please use pastel pink flowers and gold lettering." />
           </Field>
         )}
+
+        <Field label="Reference Image (optional)">
+          <label
+            htmlFor="orderReferenceImageInput"
+            className="block border-2 border-dashed border-border rounded-[18px] p-6 text-center cursor-pointer hover:border-gold hover:bg-blush-soft transition-colors"
+          >
+            <p className="text-[0.88rem] text-text-muted m-0">Have a photo of the design you&apos;d like? Click or drag it here.</p>
+            <input
+              id="orderReferenceImageInput"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => handleReferenceImageFile(e.target.files?.[0])}
+            />
+          </label>
+          {referenceImage && (
+            <div className="relative inline-block mt-3.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={referenceImage} alt="Reference preview" className="w-[120px] h-[120px] object-cover rounded-[10px] border border-border" />
+              <button
+                type="button"
+                onClick={() => setReferenceImage(null)}
+                aria-label="Remove image"
+                className="absolute -top-2 -right-2 w-[26px] h-[26px] rounded-full bg-danger text-white border-2 border-ivory text-[0.85rem]"
+              >
+                &times;
+              </button>
+            </div>
+          )}
+        </Field>
       </FormSection>
 
       <FormSection title="Delivery / Pickup">
