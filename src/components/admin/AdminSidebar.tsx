@@ -65,7 +65,8 @@ const NAV: (SingleItem | GroupItem)[] = [
       { href: "/admin/categories", label: "Categories" },
       { href: "/admin/flavors", label: "Flavors" },
       { href: "/admin/sizes", label: "Cake Sizes" },
-      { href: "/admin/media", label: "Media Library" }
+      { href: "/admin/media", label: "Media Library" },
+      { href: "/admin/gallery", label: "Gallery" }
     ]
   },
   { type: "single", href: "/admin/customers", label: "Customers", icon: Users },
