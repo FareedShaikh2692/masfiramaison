@@ -24,7 +24,7 @@ export default function CustomCakeCta() {
         <Reveal className="relative order-last lg:order-first">
           <div className="rounded-[28px] overflow-hidden shadow-[0_20px_50px_rgba(64,51,42,0.10)] border border-border transition-all duration-500 hover:shadow-[0_30px_70px_rgba(64,51,42,0.16)] hover:-translate-y-1">
             <Image
-              src="/images/category-custom.svg"
+              src="/images/product-truffle-birthday.jpg"
               alt="Custom designed celebration cake by Masfira Maison"
               width={480}
               height={560}

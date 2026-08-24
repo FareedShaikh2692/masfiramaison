@@ -148,7 +148,7 @@ export const PRODUCTS: Product[] = [
     name: "Basic Cakes",
     category: "basic",
     description: "Classic homemade cakes in the flavors everyone loves. Basic finish included.",
-    image: "/images/cake-vanilla.svg",
+    image: "/images/product-basic-white-cake.jpg",
     price: 0,
     weightOptions: BASIC_CAKE_WEIGHTS,
     flavors: BASIC_FLAVORS,
@@ -159,7 +159,7 @@ export const PRODUCTS: Product[] = [
     name: "Truffle Cake",
     category: "truffle",
     description: "Rich chocolate truffle goodness, with a premium truffle finish.",
-    image: "/images/cake-chocolate.svg",
+    image: "/images/product-truffle-birthday.jpg",
     price: 0,
     weightOptions: TRUFFLE_CAKE_WEIGHTS,
     fields: ["weight", "design", "message", "specialInstructions"]
@@ -169,7 +169,7 @@ export const PRODUCTS: Product[] = [
     name: "Bento Cake",
     category: "bento",
     description: "Cute, personal-sized cakes — perfect for small, sweet celebrations. Basic design included; custom design ₹449 onwards.",
-    image: "/images/cake-custom.svg",
+    image: "/images/product-bento-ribbon-box.jpg",
     price: 349,
     flavors: BASIC_FLAVORS,
     fields: ["flavor", "design", "message"]
@@ -179,7 +179,7 @@ export const PRODUCTS: Product[] = [
     name: "Tres Leches Milk Cake",
     category: "tres-leches",
     description: "Soft, moist & milky delight — sold per box.",
-    image: "/images/cake-vanilla.svg",
+    image: "/images/product-tres-leches.jpg",
     price: 199,
     flavors: TRES_LECHES_FLAVORS,
     fields: ["flavor"]
@@ -189,7 +189,7 @@ export const PRODUCTS: Product[] = [
     name: "Tiramisu Cake Box",
     category: "tiramisu",
     description: "Classic coffee & cream layers, boxed and ready to gift or enjoy.",
-    image: "/images/cake-butterscotch.svg",
+    image: "/images/product-tiramisu.jpg",
     price: 229,
     pricePerUnit: true,
     fields: ["quantity", "specialInstructions"]
@@ -199,7 +199,7 @@ export const PRODUCTS: Product[] = [
     name: "Jar Cake",
     category: "jar",
     description: "Individually portioned cake jars — easy to share, fun to gift. Box of 4 for ₹560.",
-    image: "/images/cake-redvelvet.svg",
+    image: "/images/product-jar-cakes.jpg",
     price: 150,
     pricePerUnit: true,
     flavors: JAR_FLAVORS,
@@ -210,7 +210,7 @@ export const PRODUCTS: Product[] = [
     name: "Cupcakes",
     category: "cupcakes",
     description: "Freshly baked cupcakes, made to order — same flavours as Basic Cakes.",
-    image: "/images/category-kids.svg",
+    image: "/images/product-cupcakes.jpg",
     price: 0,
     packOptions: CUPCAKE_PACKS,
     flavors: BASIC_FLAVORS,
@@ -221,7 +221,7 @@ export const PRODUCTS: Product[] = [
     name: "Bento Cake + 6 Cupcakes Combo",
     category: "combo",
     description: "Our most-loved pairing. Basic designs only; custom combo ₹649 onwards.",
-    image: "/images/category-celebration.svg",
+    image: "/images/product-bento-ribbon-box.jpg",
     price: 579,
     fields: ["comboFlavor", "comboCupcakeFlavor", "specialInstructions"],
     badge: "Best Combo"
@@ -231,7 +231,7 @@ export const PRODUCTS: Product[] = [
     name: "Tea Cake",
     category: "marble",
     description: "A simple, beautiful loaf cake — priced onwards.",
-    image: "/images/cake-vanilla.svg",
+    image: "/images/product-tea-cake-walnut.jpg",
     price: 280,
     fields: []
   },
@@ -240,7 +240,7 @@ export const PRODUCTS: Product[] = [
     name: "Marble Cake",
     category: "marble",
     description: "Sliced marble cake, priced per slice. Minimum 3 slices.",
-    image: "/images/cake-vanilla.svg",
+    image: "/images/product-marble-loaf.jpg",
     price: 75,
     pricePerUnit: true,
     fields: ["quantity"]
@@ -252,7 +252,7 @@ export const PRODUCTS: Product[] = [
     name: "Gulkand Paan Tres Leches Milk Cake",
     category: "specials",
     description: "Our tres leches, reimagined with the fragrant flavors of gulkand paan.",
-    image: "/images/gallery-4.svg",
+    image: "/images/product-gulkand-paan-green.jpg",
     price: null,
     weightOptions: WEIGHTS,
     fields: ["weight", "message", "specialInstructions"],
@@ -363,18 +363,19 @@ export const HOW_TO_ORDER = [
 ];
 
 /* ============================================================
-   GALLERY — swap these placeholder illustrations for real
-   Masfira Maison photography whenever it's available.
+   GALLERY — real Masfira Maison-style photography.
    ============================================================ */
 export const GALLERY: GalleryItem[] = [
-  { id: 1, category: "Basic Cakes", image: "/images/gallery-1.svg", alt: "Homemade basic cake by Masfira Maison" },
-  { id: 2, category: "Bento Cakes", image: "/images/category-birthday.svg", alt: "Bento cake by Masfira Maison" },
-  { id: 3, category: "Tres Leches", image: "/images/gallery-3.svg", alt: "Tres leches milk cake" },
-  { id: 4, category: "Cupcakes", image: "/images/category-kids.svg", alt: "Freshly baked cupcakes" },
-  { id: 5, category: "Premium Cakes", image: "/images/gallery-5.svg", alt: "Maison Special premium cake" },
-  { id: 6, category: "Custom Cakes", image: "/images/gallery-6.svg", alt: "Custom designed celebration cake" },
-  { id: 7, category: "Basic Cakes", image: "/images/gallery-7.svg", alt: "Cake decoration detail" },
-  { id: 8, category: "Bento Cakes", image: "/images/gallery-8.svg", alt: "Kids themed bento cake" }
+  { id: 1, category: "Basic Cakes", image: "/images/product-basic-white-cake.jpg", alt: "Elegant homemade basic cake" },
+  { id: 2, category: "Truffle Cake", image: "/images/product-truffle-birthday.jpg", alt: "Chocolate truffle birthday cake" },
+  { id: 3, category: "Bento Cakes", image: "/images/product-bento-ribbon-box.jpg", alt: "Bento cake in a gift box with ribbon" },
+  { id: 4, category: "Tres Leches", image: "/images/product-tres-leches.jpg", alt: "Tres leches milk cake" },
+  { id: 5, category: "Tiramisu", image: "/images/product-tiramisu.jpg", alt: "Classic tiramisu slice" },
+  { id: 6, category: "Jar Cakes", image: "/images/product-jar-cakes.jpg", alt: "Assorted dessert jar cakes" },
+  { id: 7, category: "Cupcakes", image: "/images/product-cupcakes.jpg", alt: "Assorted freshly baked cupcakes" },
+  { id: 8, category: "Loaf Slices", image: "/images/product-tea-cake-walnut.jpg", alt: "Walnut tea cake loaf" },
+  { id: 9, category: "Loaf Slices", image: "/images/product-marble-loaf.jpg", alt: "Sliced marble cake loaf" },
+  { id: 10, category: "Maison Specials", image: "/images/product-gulkand-paan-green.jpg", alt: "Gulkand paan tres leches milk cake" }
 ];
 
 /* ============================================================

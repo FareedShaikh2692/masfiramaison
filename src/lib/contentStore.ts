@@ -19,7 +19,7 @@ export interface SpecialOffer {
 }
 
 const DEFAULT_BANNER: HeroBanner = {
-  image: "/images/hero-cake.svg",
+  image: "/images/product-basic-white-cake.jpg",
   heading: "Beautifully Baked. Made For Your Moments.",
   description: "Handcrafted homemade cakes and desserts, freshly prepared with love for birthdays, celebrations, and every special moment.",
   buttonText: "Order Now",
