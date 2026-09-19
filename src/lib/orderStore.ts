@@ -49,6 +49,13 @@ export async function saveOrder(order: OrderRecord): Promise<void> {
   `;
 }
 
+export async function deleteOrder(orderId: string): Promise<boolean> {
+  await ensureTable();
+  const sql = getSql();
+  const rows = await sql`DELETE FROM orders WHERE order_id = ${orderId} RETURNING order_id`;
+  return rows.length > 0;
+}
+
 export async function findOrderByReviewToken(token: string): Promise<OrderRecord | null> {
   const orders = await readOrders();
   return orders.find((o) => o.reviewToken === token) || null;

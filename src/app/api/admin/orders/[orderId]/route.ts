@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readOrders, updateOrder } from "@/lib/orderStore";
+import { readOrders, updateOrder, deleteOrder } from "@/lib/orderStore";
 import { createNotification } from "@/lib/notificationStore";
 import { generateReviewToken } from "@/lib/reviewStore";
 import type { OrderStatus, PaymentStatus } from "@/lib/types";
@@ -68,4 +68,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ or
   }
 
   return NextResponse.json({ order });
+}
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ orderId: string }> }) {
+  const { orderId } = await params;
+  const deleted = await deleteOrder(orderId);
+  if (!deleted) return NextResponse.json({ error: "Order not found." }, { status: 404 });
+  return NextResponse.json({ ok: true });
 }

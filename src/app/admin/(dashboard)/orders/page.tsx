@@ -11,7 +11,9 @@ import PageHeader from "@/components/admin/PageHeader";
 import StatusBadge, { type BadgeTone } from "@/components/admin/StatusBadge";
 import EmptyState from "@/components/admin/EmptyState";
 import { TableSkeleton } from "@/components/admin/Skeleton";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Trash2 } from "lucide-react";
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
+import { useToast } from "@/components/admin/Toast";
 
 const STATUS_OPTIONS = ["all", ...Object.keys(ORDER_STATUS_LABEL)];
 
@@ -29,6 +31,8 @@ function OrdersList() {
   const [sortDir, setSortDir] = useState<1 | -1>(-1);
   const status = params.get("status") || "all";
   const pageSize = 20;
+  const { showToast } = useToast();
+  const [deleteTarget, setDeleteTarget] = useState<OrderRecord | null>(null);
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -54,6 +58,18 @@ function OrdersList() {
   useEffect(() => {
     Promise.resolve().then(load);
   }, [load]);
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    const res = await fetch(`/api/admin/orders/${deleteTarget.orderId}`, { method: "DELETE" });
+    setDeleteTarget(null);
+    if (res.ok) {
+      showToast("Order deleted.");
+      load();
+    } else {
+      showToast("Could not delete the order.", "error");
+    }
+  }
 
   function setStatus(next: string) {
     setPage(1);
@@ -104,7 +120,19 @@ function OrdersList() {
               >
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <span className="font-semibold text-gold-dark">{o.orderId}</span>
-                  <StatusBadge label={ORDER_STATUS_LABEL[o.status]} tone={statusTone(o.status)} />
+                  <div className="flex items-center gap-2">
+                    <StatusBadge label={ORDER_STATUS_LABEL[o.status]} tone={statusTone(o.status)} />
+                    <button
+                      aria-label={`Delete order ${o.orderId}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteTarget(o);
+                      }}
+                      className="p-1.5 rounded-md text-danger hover:bg-blush-soft"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
                 </div>
                 <div className="text-ink font-medium">{o.fullName}</div>
                 <div className="text-text-muted text-[0.8rem] mb-2">{o.phone} · {o.productName}</div>
@@ -126,6 +154,7 @@ function OrdersList() {
                   <SortableTh label="Date" active={sortKey === "preferredDate"} dir={sortDir} onClick={() => toggleSort("preferredDate")} />
                   <SortableTh label="Amount" active={sortKey === "total"} dir={sortDir} onClick={() => toggleSort("total")} />
                   <th className="px-5 py-3 font-medium">Status</th>
+                  <th className="px-5 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,6 +174,19 @@ function OrdersList() {
                     <td className="px-5 py-3 text-ink">{o.total != null ? `₹${o.total}` : "—"}</td>
                     <td className="px-5 py-3">
                       <StatusBadge label={ORDER_STATUS_LABEL[o.status]} tone={statusTone(o.status)} />
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <button
+                        aria-label={`Delete order ${o.orderId}`}
+                        title="Delete order"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteTarget(o);
+                        }}
+                        className="p-1.5 rounded-md text-danger hover:bg-blush-soft"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -167,6 +209,14 @@ function OrdersList() {
           </button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete this order?"
+        message={`Order ${deleteTarget?.orderId} from ${deleteTarget?.fullName} will be permanently removed. This can't be undone.`}
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
 
       <div className="mt-4">
         <Link href="/admin" className="text-text-muted text-[0.85rem] hover:text-gold-dark">
